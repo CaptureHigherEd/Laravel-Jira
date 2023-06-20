@@ -45,6 +45,10 @@ class IntegrationServiceProvider extends ServiceProvider implements DeferrablePr
      */
     public function registerJiraService()
     {
+        $config = __DIR__ . '/../config/jira.php';
+        $this->mergeConfigFrom($config, 'jira');
+        $this->publishes([$config => config_path('jira.php')]);
+
         $this->app->singleton(
             JiraService::class,
             function ($app) {
