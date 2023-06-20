@@ -56,4 +56,4 @@ This project follows the [Semantic Versioning](http://semver.org/)
 
 ## Thanks
 
-Code originated by https://github.com/ashish-negi
+Code originated by https://github.com/mpetty
