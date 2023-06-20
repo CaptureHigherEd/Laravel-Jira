@@ -1,0 +1,15 @@
+{
+  "name": "capturehighered/laravel-jira",
+  "description": "Laravel Jira API integration",
+  "keywords": [
+    "laravel",
+    "jira",
+  ],
+  "type": "project",
+  "private": true,
+  "require": {
+    "php": "^8.0.2",
+    "laravel/framework": "^8.0",
+  },
+  "minimum-stability": "stable"
+}
