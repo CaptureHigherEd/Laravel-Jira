@@ -1,9 +1,9 @@
 <?php
 
-namespace Capture\Integrations\Jira\Api;
+namespace CaptureHigherEd\LaravelJira\Api;
 
-use Capture\Integrations\Jira\Models\Issue;
-use Capture\Integrations\Jira\Models\Search;
+use CaptureHigherEd\LaravelJira\Models\Issue;
+use CaptureHigherEd\LaravelJira\Models\Search;
 
 /**
  * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-group-issues
