@@ -14,5 +14,10 @@
   "require-dev": {
     "phpunit/phpunit": "~9.0"
   },
+  "autoload": {
+    "psr-4": {
+      "CaptureHigherEd\\LaravelJira\\": "src/CaptureHigherEd/LaravelJira"
+    }
+  },
   "minimum-stability": "stable"
 }
