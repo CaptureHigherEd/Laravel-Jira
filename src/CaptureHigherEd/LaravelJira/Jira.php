@@ -39,10 +39,18 @@ class Jira
     }
 
     /**
-     * @return Api\IssueFields
+     * @return Api\Fields
      */
     public function fields(): Api\Fields
     {
         return new Api\Fields($this->httpClient);
+    }
+
+    /**
+     * @return Api\Users
+     */
+    public function users(): Api\Users
+    {
+        return new Api\Users($this->httpClient);
     }
 }

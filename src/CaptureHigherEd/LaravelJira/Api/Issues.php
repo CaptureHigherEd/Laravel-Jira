@@ -41,6 +41,16 @@ class Issues extends HttpApi
     }
 
     /**
+     * Attach a file
+     */
+    public function attach(string $issueId, array $params = []): Issue
+    {
+        $response = $this->httpPostWithAttachments(sprintf('issue/%s/attachments', $issueId), $params);
+
+        return $this->hydrateResponse($response, Issue::class);
+    }
+
+    /**
      * Update an issue
      */
     public function update(string $issueId, array $params = []): Issue
@@ -48,6 +58,16 @@ class Issues extends HttpApi
         $response = $this->httpPut(sprintf('issue/%s', $issueId), $params);
 
         return $this->hydrateResponse($response, Issue::class);
+    }
+
+    /**
+     * Get creation metadata
+     */
+    public function getCreateMeta(array $params = [])
+    {
+        $response = $this->httpGet('issue/createmeta', $params);
+
+        return $this->hydrateResponse($response);
     }
 
     /**
