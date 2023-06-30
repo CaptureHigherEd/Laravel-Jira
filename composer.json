@@ -5,6 +5,7 @@
     "laravel",
     "jira"
   ],
+  "homepage": "https://capturehighered.com",
   "type": "project",
   "license": "MIT",
   "require": {
@@ -19,5 +20,12 @@
       "CaptureHigherEd\\LaravelJira\\": "src/CaptureHigherEd/LaravelJira"
     }
   },
-  "minimum-stability": "stable"
+  "config": {
+      "sort-packages": true,
+      "allow-plugins": {
+          "composer/package-versions-deprecated": true
+      }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
 }
