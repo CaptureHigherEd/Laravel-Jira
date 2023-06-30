@@ -28,6 +28,7 @@ abstract class HttpApi
 
         return $response;
     }
+
     protected function httpPostWithAttachments(string $path, array $multipart = [], array $headers = []): ResponseInterface
     {
         $response = $this->httpClient->post($path, ['multipart' => $multipart, 'headers' => [

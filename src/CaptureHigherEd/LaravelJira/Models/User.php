@@ -26,9 +26,9 @@ final class User implements ApiResponse
         $model->setName($data[self::NAME] ?? '');
         $model->setEmail($data[self::EMAIL] ?? '');
         $model->setActive($data[self::ACTIVE] ?? '');
+
         return $model;
     }
-
 
     public function getKey(): string
     {
