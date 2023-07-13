@@ -11,15 +11,8 @@ final class Issue implements ApiResponse
     const PROJECT = 'project';
     const DESCRIPTION = 'description';
     const ISSUETYPE = 'issuetype';
-
-    const CUSTOMFIELD_PARTNERWEBSITE = 'customfield_10056';
-    const CUSTOMFIELD_ENGAGEURL = 'customfield_10057';
-    const CUSTOMFIELD_POPULATIONSIZE = 'customfield_10060';
-    const CUSTOMFIELD_POPULATIONTYPES = 'customfield_10061';
-    const CUSTOMFIELD_POPULATIONNAMES = 'customfield_10062';
-    const CUSTOMFIELD_REQUESTTYPE = 'customfield_10026';
-    const CUSTOMFIELD_CLIENTNAME = 'customfield_10064';
-    const CUSTOMFIELD_PHYSICALADDRESS = 'customfield_10070';
+    const DUEDATE = 'duedate';
+    const REPORTER = 'reporter';
 
     private array $fields = [];
     private string $key = '';
@@ -65,6 +58,11 @@ final class Issue implements ApiResponse
         return $this->key;
     }
 
+    public function getLink(): string
+    {
+        return config('jira.domain') . '/browse/' . $this->key;
+    }
+
     public function setFields($value): self
     {
         $this->fields = $value;
@@ -105,16 +103,22 @@ final class Issue implements ApiResponse
 
     public function setDescription($value): self
     {
-        return $this->setField(self::DESCRIPTION, [
-            "content" => $value,
-            "type" => "doc",
-            "version" => 1,
-        ]);
+        return $this->setCustomFieldByContent(self::DESCRIPTION, $value);
     }
 
     public function setIssueType($value): self
     {
         return $this->setField(self::ISSUETYPE, $value);
+    }
+
+    public function setDueDate($value): self
+    {
+        return $this->setField(self::DUEDATE, $value);
+    }
+
+    public function setReporter($value): self
+    {
+        return $this->setCustomFieldById(self::REPORTER, $value);
     }
 
     public function setIssueTypeByName($value): self
@@ -134,7 +138,16 @@ final class Issue implements ApiResponse
 
     public function setCustomFieldByValue($field, $value): self
     {
-        return $this->setCustomField($field, ["value" => $value]);
+        return $this->setCustomField($field, [["value" => $value]]);
+    }
+
+    public function setCustomFieldByContent($field, $value): self
+    {
+        return $this->setField($field, [
+            "content" => $value,
+            "type" => "doc",
+            "version" => 1,
+        ]);
     }
 
     public function toArray(): array

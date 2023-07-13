@@ -21,8 +21,9 @@ class Jira
      * @param  string $endpoint - full path to the jira API
      * @return self
      */
-    public static function create(string $apiKey, string $endpoint = 'https://capturehighered.atlassian.net/rest/api/3/'): self
+    public static function create(string $apiKey, string $endpoint = null): self
     {
+        $endpoint ??= config('jira.domain') . '/rest/api/3/';
         $httpClient = (new HttpClientConnector())
             ->setApiKey($apiKey)
             ->setEndpoint($endpoint);
@@ -39,10 +40,18 @@ class Jira
     }
 
     /**
-     * @return Api\IssueFields
+     * @return Api\Fields
      */
     public function fields(): Api\Fields
     {
         return new Api\Fields($this->httpClient);
+    }
+
+    /**
+     * @return Api\Users
+     */
+    public function users(): Api\Users
+    {
+        return new Api\Users($this->httpClient);
     }
 }

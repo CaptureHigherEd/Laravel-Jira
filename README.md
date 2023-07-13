@@ -38,6 +38,7 @@ By default, the package uses the following environment variables:
 ```
 JIRA_API_EMAIL
 JIRA_API_TOKEN
+JIRA_API_DOMAIN
 ```
 
 You must publish the config file for this to work:

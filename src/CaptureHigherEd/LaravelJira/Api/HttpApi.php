@@ -29,6 +29,16 @@ abstract class HttpApi
         return $response;
     }
 
+    protected function httpPostWithAttachments(string $path, array $multipart = [], array $headers = []): ResponseInterface
+    {
+        $response = $this->httpClient->post($path, ['multipart' => $multipart, 'headers' => [
+            'Accept' => 'application/json',
+            'X-Atlassian-Token' => 'no-check'
+        ]]);
+
+        return $response;
+    }
+
     protected function httpPut(string $path, array $parameters = []): ResponseInterface
     {
         $response = $this->httpClient->put($path, ['body' => json_encode($parameters)]);

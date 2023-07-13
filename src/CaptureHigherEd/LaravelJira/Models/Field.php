@@ -2,6 +2,8 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
+use CaptureHigherEd\LaravelJira\Jira;
+
 final class Field implements ApiResponse
 {
     const CLAUSENAMES = 'clauseNames';
@@ -88,6 +90,28 @@ final class Field implements ApiResponse
     public function getClauseNames()
     {
         return $this->clauseNames;
+    }
+
+    public function getOptions(string $project_key, string $issue_type_name)
+    {
+        $jira = app(Jira::class);
+        $meta = $jira->issues()->getCreateMeta(['expand' => 'projects.issuetypes.fields']);
+
+        foreach ($meta['projects'] as $project) {
+            if ($project['key'] == $project_key) {
+                foreach ($project['issuetypes'] as $issue_type) {
+                    if ($issue_type['name'] == $issue_type_name) {
+                        foreach ($issue_type['fields'] as $field_key => $field) {
+                            if ($field_key == $this->getKey()) {
+                                return collect($field['allowedValues'])->pluck('value', 'value')->toArray();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return [];
     }
 
     public function setId($value): self
