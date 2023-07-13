@@ -102,7 +102,7 @@ final class Field implements ApiResponse
                     if ($issue_type['name'] == $issue_type_name) {
                         foreach ($issue_type['fields'] as $field_key => $field) {
                             if ($field_key == $this->getKey()) {
-                                return collect($field['allowedValues'])->pluck('value')->toArray();
+                                return collect($field['allowedValues'])->pluck('value', 'value')->toArray();
                             }
                         }
                     }

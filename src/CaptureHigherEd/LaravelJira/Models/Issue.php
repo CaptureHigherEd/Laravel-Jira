@@ -58,6 +58,11 @@ final class Issue implements ApiResponse
         return $this->key;
     }
 
+    public function getLink(): string
+    {
+        return config('jira.domain') . '/browse/' . $this->key;
+    }
+
     public function setFields($value): self
     {
         $this->fields = $value;
