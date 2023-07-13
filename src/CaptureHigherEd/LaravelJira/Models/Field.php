@@ -96,6 +96,7 @@ final class Field implements ApiResponse
     {
         $jira = app(Jira::class);
         $meta = $jira->issues()->getCreateMeta(['expand' => 'projects.issuetypes.fields']);
+
         foreach ($meta['projects'] as $project) {
             if ($project['key'] == $project_key) {
                 foreach ($project['issuetypes'] as $issue_type) {
@@ -109,6 +110,7 @@ final class Field implements ApiResponse
                 }
             }
         }
+
         return [];
     }
 

@@ -3,8 +3,6 @@
 namespace CaptureHigherEd\LaravelJira\Api;
 
 use CaptureHigherEd\LaravelJira\Models\Fields as ModelsFields;
-use CaptureHigherEd\LaravelJira\Models\FieldsOptions as ModelsFieldOptions;
-use CaptureHigherEd\LaravelJira\Models\Contexts as ModelsContexts;
 
 /**
  * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-group-issue-fields
