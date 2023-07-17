@@ -51,6 +51,16 @@ class Issues extends HttpApi
     }
 
     /**
+     * Add a comment
+     */
+    public function comment(string $issueId, array $params = []): Issue
+    {
+        $response = $this->httpPost(sprintf('issue/%s/comment', $issueId), $params);
+
+        return $this->hydrateResponse($response, Issue::class);
+    }
+
+    /**
      * Update an issue
      */
     public function update(string $issueId, array $params = []): Issue
