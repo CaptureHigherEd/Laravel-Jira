@@ -136,9 +136,10 @@ final class Issue implements ApiResponse
         return $this->setCustomField($field, ["id" => $value]);
     }
 
-    public function setCustomFieldByValue($field, $value): self
+    public function setCustomFieldByValue($field, $value, ?bool $is_multi_select = true): self
     {
-        return $this->setCustomField($field, [["value" => $value]]);
+        $value_array = $is_multi_select ? [["value" => $value]] : ["value" => $value];
+        return $this->setCustomField($field, $value_array);
     }
 
     public function setCustomFieldByContent($field, $value): self
