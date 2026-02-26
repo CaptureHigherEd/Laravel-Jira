@@ -21,6 +21,16 @@ vendor/bin/phpstan analyse  # static analysis (level 6)
 vendor/bin/pint             # code style
 ```
 
+## After Every Change
+
+Always run these three commands before committing:
+
+```sh
+vendor/bin/phpunit          # must pass
+vendor/bin/phpstan analyse  # must show [OK] No errors
+vendor/bin/pint             # auto-fixes style; run --test to check only
+```
+
 ## Conventions
 
 - PHP 8.1+, strict types expected

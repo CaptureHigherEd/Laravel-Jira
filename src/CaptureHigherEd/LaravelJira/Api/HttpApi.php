@@ -112,7 +112,7 @@ abstract class HttpApi
             return $class ? $class::make([]) : [];
         }
 
-        $data = json_decode($body, true);
+        $data = json_decode($body, true) ?? [];
 
         if (! $class) {
             return $data;

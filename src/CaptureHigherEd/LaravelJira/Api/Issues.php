@@ -2,6 +2,8 @@
 
 namespace CaptureHigherEd\LaravelJira\Api;
 
+use CaptureHigherEd\LaravelJira\Models\Attachments;
+use CaptureHigherEd\LaravelJira\Models\Comment;
 use CaptureHigherEd\LaravelJira\Models\Issue;
 use CaptureHigherEd\LaravelJira\Models\Search;
 
@@ -50,26 +52,24 @@ class Issues extends HttpApi
      * Attach a file
      *
      * @param  array<int, array<string, mixed>>  $params
-     * @return array<mixed>
      */
-    public function attach(string $issueId, array $params = []): array
+    public function attach(string $issueId, array $params = []): Attachments
     {
         $response = $this->httpPostWithAttachments(sprintf('issue/%s/attachments', $issueId), $params);
 
-        return $this->hydrateResponse($response);
+        return $this->hydrateResponse($response, Attachments::class);
     }
 
     /**
      * Add a comment
      *
      * @param  array<string, mixed>  $params
-     * @return array<mixed>
      */
-    public function comment(string $issueId, array $params = []): array
+    public function comment(string $issueId, array $params = []): Comment
     {
         $response = $this->httpPost(sprintf('issue/%s/comment', $issueId), $params);
 
-        return $this->hydrateResponse($response);
+        return $this->hydrateResponse($response, Comment::class);
     }
 
     /**

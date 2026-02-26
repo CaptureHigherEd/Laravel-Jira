@@ -14,7 +14,7 @@ class Users extends HttpApi
      *
      * @param  array<string, mixed>  $params
      */
-    public function index(array $params = []): ModelsUsers
+    public function index(array $params = ['maxResults' => 1000]): ModelsUsers
     {
         $response = $this->httpGet('users', $params);
 

@@ -26,7 +26,7 @@ final class HttpClientException extends \RuntimeException
         if (strpos($response->getHeaderLine('Content-Type'), 'application/json') !== 0) {
             $this->responseBody['message'] = $body;
         } elseif ($body) {
-            $this->responseBody = json_decode($body, true);
+            $this->responseBody = json_decode($body, true) ?? [];
         }
     }
 

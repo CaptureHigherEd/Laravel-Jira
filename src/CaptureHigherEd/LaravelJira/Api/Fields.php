@@ -12,8 +12,7 @@ class Fields extends HttpApi
 {
     /**
      * Get all fields
-     */
-    /**
+     *
      * @param  array<string, mixed>  $params
      */
     public function index(array $params = []): ModelsFields
