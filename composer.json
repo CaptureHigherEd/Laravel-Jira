@@ -1,31 +1,45 @@
 {
-  "name": "capturehighered/laravel-jira",
-  "description": "Laravel Jira API integration",
-  "keywords": [
-    "laravel",
-    "jira"
-  ],
-  "homepage": "https://capturehighered.com",
-  "type": "project",
-  "license": "MIT",
-  "require": {
-    "php": "^8.2",
-    "laravel/framework": ">=9.0"
-  },
-  "require-dev": {
-    "phpunit/phpunit": "^10.0"
-  },
-  "autoload": {
-    "psr-4": {
-      "CaptureHigherEd\\LaravelJira\\": "src/CaptureHigherEd/LaravelJira"
-    }
-  },
-  "config": {
-      "sort-packages": true,
-      "allow-plugins": {
-          "composer/package-versions-deprecated": true
-      }
-  },
-  "minimum-stability": "stable",
-  "prefer-stable": true
+    "name": "capturehighered/laravel-jira",
+    "description": "Laravel Jira REST API v3 client",
+    "keywords": [
+        "laravel",
+        "jira",
+        "atlassian"
+    ],
+    "homepage": "https://capturehighered.com",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.1",
+        "guzzlehttp/guzzle": "^7.0",
+        "laravel/framework": "^10.0||^11.0||^12.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.0",
+        "orchestra/testbench": "^8.0||^9.0||^10.0",
+        "phpstan/phpstan": "^1.0",
+        "phpunit/phpunit": "^10.0||^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "CaptureHigherEd\\LaravelJira\\": "src/CaptureHigherEd/LaravelJira"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "CaptureHigherEd\\LaravelJira\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "CaptureHigherEd\\LaravelJira\\Providers\\IntegrationServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }

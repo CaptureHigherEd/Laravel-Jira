@@ -3,18 +3,19 @@
 return [
 
     /**
-     * Personal access token to use for jira service
+     * Atlassian API Token for authenticating with the Jira REST API.
      *
-     * This should be a base64 encoded string in the format "test@[domain]:jiraPersonalAccessToken"
+     * This is auto-built from JIRA_API_EMAIL and JIRA_API_TOKEN as a base64-encoded
+     * "email:token" string (HTTP Basic Auth format required by Atlassian Cloud).
      *
-     * @link https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html
+     * To generate a token: https://id.atlassian.com/manage-profile/security/api-tokens
      */
-    'token' => env("JIRA_API_EMAIL") && env("JIRA_API_TOKEN")
-        ? base64_encode(trim(env("JIRA_API_EMAIL") . ':' . env("JIRA_API_TOKEN")))
+    'token' => env('JIRA_API_EMAIL') && env('JIRA_API_TOKEN')
+        ? base64_encode(trim(env('JIRA_API_EMAIL').':'.env('JIRA_API_TOKEN')))
         : null,
 
     /**
      * Jira domain: ex. https://[client name].atlassian.net
      */
-    'domain' => env("JIRA_API_DOMAIN")
+    'domain' => env('JIRA_API_DOMAIN'),
 ];

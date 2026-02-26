@@ -1,34 +1,56 @@
 <?php
 
-namespace tests;
+namespace CaptureHigherEd\LaravelJira\Tests;
 
-use Tests\TestCase;
+use CaptureHigherEd\LaravelJira\Api\Fields;
+use CaptureHigherEd\LaravelJira\Api\Issues;
+use CaptureHigherEd\LaravelJira\Api\Users;
 use CaptureHigherEd\LaravelJira\Jira;
+use CaptureHigherEd\LaravelJira\Tests\Concerns\UsesTestbench;
+use Orchestra\Testbench\TestCase;
 
-/**
- * @group Integrations
- * @group skip
- */
 class JiraTest extends TestCase
 {
-    private $jiraService;
+    use UsesTestbench;
 
-    protected function setUp(): void
+    // ── Service resolution ────────────────────────────────────────────────
+
+    public function test_jira_service_can_be_resolved(): void
     {
-        $this->jiraService = app(Jira::class);
+        $jira = $this->app->make(Jira::class);
 
-        $this->assertNotNull($this->jiraService);
-
-        parent::setUp();
+        $this->assertInstanceOf(Jira::class, $jira, 'Jira service should resolve to a Jira instance when credentials are present');
     }
 
-    public function test_get_issues()
+    public function test_jira_service_returns_null_when_token_missing(): void
     {
-        $issues = $this->jiraService->issues()->index();
-        $this->assertNotNull($issues);
+        $this->app['config']->set('jira.token', null);
 
-        $issueKey = $issues->getIssues()[0]->getKey();
-        $issue = $this->jiraService->issues()->show($issueKey);
-        $this->assertNotNull($issue);
+        $jira = $this->app->make(Jira::class);
+
+        $this->assertNull($jira, 'Jira service should return null when the API token is not configured');
+    }
+
+    // ── API accessors ─────────────────────────────────────────────────────
+
+    public function test_jira_exposes_issues_api(): void
+    {
+        $jira = $this->app->make(Jira::class);
+
+        $this->assertInstanceOf(Issues::class, $jira->issues(), 'Jira::issues() should return an Issues API instance');
+    }
+
+    public function test_jira_exposes_fields_api(): void
+    {
+        $jira = $this->app->make(Jira::class);
+
+        $this->assertInstanceOf(Fields::class, $jira->fields(), 'Jira::fields() should return a Fields API instance');
+    }
+
+    public function test_jira_exposes_users_api(): void
+    {
+        $jira = $this->app->make(Jira::class);
+
+        $this->assertInstanceOf(Users::class, $jira->users(), 'Jira::users() should return a Users API instance');
     }
 }

@@ -6,13 +6,15 @@ use CaptureHigherEd\LaravelJira\Exception\CustomFieldDoesNotExistException;
 
 final class Fields implements ApiResponse
 {
+    /** @var array<int, Field> */
     private array $fields = [];
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
-    public static function make(?array $data = []): self
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function make(array $data = []): self
     {
         $fields = [];
 
@@ -20,19 +22,25 @@ final class Fields implements ApiResponse
             $fields[] = Field::make($item);
         }
 
-        $model = new self();
+        $model = new self;
 
         $model->fields = $fields;
 
         return $model;
     }
 
-    public function getFields()
+    /**
+     * @return array<int, Field>
+     */
+    public function getFields(): array
     {
         return $this->fields;
     }
 
-    public function getCustomFields()
+    /**
+     * @return array<int, Field>
+     */
+    public function getCustomFields(): array
     {
         return array_filter($this->fields, static function (Field $field): bool {
             return str_starts_with($field->getKey(), 'customfield_');
@@ -42,11 +50,11 @@ final class Fields implements ApiResponse
     public function getCustomFieldId(string $name): string
     {
         $field = current(array_filter($this->getCustomFields(), static function (Field $field) use ($name): bool {
-            return $field->getName() == $name;
+            return $field->getName() === $name;
         }));
 
-        if (!$field) {
-            throw new CustomFieldDoesNotExistException();
+        if (! $field) {
+            throw new CustomFieldDoesNotExistException($name);
         }
 
         return $field->getId();
@@ -55,18 +63,21 @@ final class Fields implements ApiResponse
     public function getCustomField(string $name): Field
     {
         $field = current(array_filter($this->getCustomFields(), static function (Field $field) use ($name): bool {
-            return $field->getName() == $name;
+            return $field->getName() === $name;
         }));
 
-        if (!$field) {
-            throw new CustomFieldDoesNotExistException();
+        if (! $field) {
+            throw new CustomFieldDoesNotExistException($name);
         }
 
         return $field;
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     public function toArray(): array
     {
-        return [];
+        return array_map(fn (Field $field) => $field->toArray(), $this->fields);
     }
 }
