@@ -14,6 +14,8 @@ final class Field implements ApiResponse
 
     const SCHEMA = 'schema';
 
+    const SCOPE = 'scope';
+
     const CUSTOM = 'custom';
 
     const NAME = 'name';
@@ -42,6 +44,9 @@ final class Field implements ApiResponse
     /** @var array<string, mixed> */
     private array $schema = [];
 
+    /** @var array<string, mixed> */
+    private array $scope = [];
+
     private function __construct() {}
 
     /**
@@ -60,6 +65,7 @@ final class Field implements ApiResponse
         $model->setNavigable($data[self::NAVIGABLE] ?? false);
         $model->setSchema($data[self::SCHEMA] ?? []);
         $model->setClauseNames($data[self::CLAUSENAMES] ?? []);
+        $model->setScope($data[self::SCOPE] ?? []);
 
         return $model;
     }
@@ -113,6 +119,14 @@ final class Field implements ApiResponse
     public function getClauseNames(): array
     {
         return $this->clauseNames;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getScope(): array
+    {
+        return $this->scope;
     }
 
     public function setId(string $value): self
@@ -185,6 +199,16 @@ final class Field implements ApiResponse
     }
 
     /**
+     * @param  array<string, mixed>  $value
+     */
+    public function setScope(array $value): self
+    {
+        $this->scope = $value;
+
+        return $this;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function toArray(): array
@@ -199,6 +223,7 @@ final class Field implements ApiResponse
             self::SEARCHABLE => $this->searchable,
             self::CLAUSENAMES => $this->clauseNames,
             self::SCHEMA => $this->schema,
+            self::SCOPE => $this->scope,
         ];
     }
 }

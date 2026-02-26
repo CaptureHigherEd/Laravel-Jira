@@ -14,6 +14,14 @@ final class Comment implements ApiResponse
 
     const SELF = 'self';
 
+    const AUTHOR = 'author';
+
+    const UPDATE_AUTHOR = 'updateAuthor';
+
+    const JSD_PUBLIC = 'jsdPublic';
+
+    const VISIBILITY = 'visibility';
+
     private string $id = '';
 
     /** @var array<mixed> */
@@ -24,6 +32,15 @@ final class Comment implements ApiResponse
     private string $updated = '';
 
     private string $self = '';
+
+    private ?User $author = null;
+
+    private ?User $updateAuthor = null;
+
+    private bool $jsdPublic = true;
+
+    /** @var array<string, mixed> */
+    private array $visibility = [];
 
     private function __construct() {}
 
@@ -39,6 +56,10 @@ final class Comment implements ApiResponse
         $model->setCreated($data[self::CREATED] ?? '');
         $model->setUpdated($data[self::UPDATED] ?? '');
         $model->setSelf($data[self::SELF] ?? '');
+        $model->setAuthor(isset($data[self::AUTHOR]) ? User::make($data[self::AUTHOR]) : null);
+        $model->setUpdateAuthor(isset($data[self::UPDATE_AUTHOR]) ? User::make($data[self::UPDATE_AUTHOR]) : null);
+        $model->setJsdPublic($data[self::JSD_PUBLIC] ?? true);
+        $model->setVisibility($data[self::VISIBILITY] ?? []);
 
         return $model;
     }
@@ -69,6 +90,29 @@ final class Comment implements ApiResponse
     public function getSelf(): string
     {
         return $this->self;
+    }
+
+    public function getAuthor(): ?User
+    {
+        return $this->author;
+    }
+
+    public function getUpdateAuthor(): ?User
+    {
+        return $this->updateAuthor;
+    }
+
+    public function getJsdPublic(): bool
+    {
+        return $this->jsdPublic;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getVisibility(): array
+    {
+        return $this->visibility;
     }
 
     public function setId(string $value): self
@@ -109,6 +153,37 @@ final class Comment implements ApiResponse
         return $this;
     }
 
+    public function setAuthor(?User $value): self
+    {
+        $this->author = $value;
+
+        return $this;
+    }
+
+    public function setUpdateAuthor(?User $value): self
+    {
+        $this->updateAuthor = $value;
+
+        return $this;
+    }
+
+    public function setJsdPublic(bool $value): self
+    {
+        $this->jsdPublic = $value;
+
+        return $this;
+    }
+
+    /**
+     * @param  array<string, mixed>  $value
+     */
+    public function setVisibility(array $value): self
+    {
+        $this->visibility = $value;
+
+        return $this;
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -120,6 +195,10 @@ final class Comment implements ApiResponse
             self::CREATED => $this->created,
             self::UPDATED => $this->updated,
             self::SELF => $this->self,
+            self::AUTHOR => $this->author?->toArray(),
+            self::UPDATE_AUTHOR => $this->updateAuthor?->toArray(),
+            self::JSD_PUBLIC => $this->jsdPublic,
+            self::VISIBILITY => $this->visibility,
         ];
     }
 }

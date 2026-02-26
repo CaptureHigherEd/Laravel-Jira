@@ -19,6 +19,7 @@ class FieldTest extends TestCase
             'searchable' => true,
             'clauseNames' => ['cf[10001]', 'Story Points'],
             'schema' => ['type' => 'number', 'custom' => 'com.atlassian.jira.plugin.system.customfieldtypes:float'],
+            'scope' => ['type' => 'PROJECT', 'project' => ['id' => '10000']],
         ];
 
         $field = Field::make($data);
@@ -39,6 +40,7 @@ class FieldTest extends TestCase
         $this->assertFalse($field->getSearchable(), 'Field searchable flag should default to false when not provided');
         $this->assertSame([], $field->getClauseNames(), 'Field clauseNames should default to an empty array when not provided');
         $this->assertSame([], $field->getSchema(), 'Field schema should default to an empty array when not provided');
+        $this->assertSame([], $field->getScope(), 'Field scope should default to an empty array when not provided');
     }
 
     public function test_make_with_partial_data(): void

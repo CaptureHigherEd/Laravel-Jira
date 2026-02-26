@@ -16,6 +16,12 @@ final class Attachment implements ApiResponse
 
     const SELF = 'self';
 
+    const AUTHOR = 'author';
+
+    const CREATED = 'created';
+
+    const THUMBNAIL = 'thumbnail';
+
     private string $id = '';
 
     private string $filename = '';
@@ -27,6 +33,12 @@ final class Attachment implements ApiResponse
     private string $content = '';
 
     private string $self = '';
+
+    private ?User $author = null;
+
+    private string $created = '';
+
+    private string $thumbnail = '';
 
     private function __construct() {}
 
@@ -43,6 +55,9 @@ final class Attachment implements ApiResponse
         $model->setSize((int) ($data[self::SIZE] ?? 0));
         $model->setContent($data[self::CONTENT] ?? '');
         $model->setSelf($data[self::SELF] ?? '');
+        $model->setAuthor(isset($data[self::AUTHOR]) ? User::make($data[self::AUTHOR]) : null);
+        $model->setCreated($data[self::CREATED] ?? '');
+        $model->setThumbnail($data[self::THUMBNAIL] ?? '');
 
         return $model;
     }
@@ -75,6 +90,21 @@ final class Attachment implements ApiResponse
     public function getSelf(): string
     {
         return $this->self;
+    }
+
+    public function getAuthor(): ?User
+    {
+        return $this->author;
+    }
+
+    public function getCreated(): string
+    {
+        return $this->created;
+    }
+
+    public function getThumbnail(): string
+    {
+        return $this->thumbnail;
     }
 
     public function setId(string $value): self
@@ -119,6 +149,27 @@ final class Attachment implements ApiResponse
         return $this;
     }
 
+    public function setAuthor(?User $value): self
+    {
+        $this->author = $value;
+
+        return $this;
+    }
+
+    public function setCreated(string $value): self
+    {
+        $this->created = $value;
+
+        return $this;
+    }
+
+    public function setThumbnail(string $value): self
+    {
+        $this->thumbnail = $value;
+
+        return $this;
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -131,6 +182,9 @@ final class Attachment implements ApiResponse
             self::SIZE => $this->size,
             self::CONTENT => $this->content,
             self::SELF => $this->self,
+            self::AUTHOR => $this->author?->toArray(),
+            self::CREATED => $this->created,
+            self::THUMBNAIL => $this->thumbnail,
         ];
     }
 }

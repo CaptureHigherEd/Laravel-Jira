@@ -18,6 +18,9 @@ class AttachmentsTest extends TestCase
                 'size' => 100,
                 'content' => 'https://example.com/a.png',
                 'self' => 'https://example.com/attachment/1',
+                'author' => null,
+                'created' => '2024-01-01T00:00:00.000+0000',
+                'thumbnail' => '',
             ],
             [
                 'id' => '2',
@@ -26,6 +29,9 @@ class AttachmentsTest extends TestCase
                 'size' => 200,
                 'content' => 'https://example.com/b.pdf',
                 'self' => 'https://example.com/attachment/2',
+                'author' => null,
+                'created' => '2024-01-02T00:00:00.000+0000',
+                'thumbnail' => '',
             ],
         ];
 

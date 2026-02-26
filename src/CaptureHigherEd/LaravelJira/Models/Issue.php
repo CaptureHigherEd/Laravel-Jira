@@ -8,19 +8,37 @@ final class Issue implements ApiResponse
 
     const ID = 'id';
 
+    const SELF = 'self';
+
     const FIELDS = 'fields';
 
     const SUMMARY = 'summary';
 
-    const PROJECT = 'project';
-
     const DESCRIPTION = 'description';
+
+    const STATUS = 'status';
+
+    const ASSIGNEE = 'assignee';
+
+    const REPORTER = 'reporter';
+
+    const PRIORITY = 'priority';
 
     const ISSUETYPE = 'issuetype';
 
+    const PROJECT = 'project';
+
+    const LABELS = 'labels';
+
+    const CREATED = 'created';
+
+    const UPDATED = 'updated';
+
     const DUEDATE = 'duedate';
 
-    const REPORTER = 'reporter';
+    const RESOLUTION = 'resolution';
+
+    const RESOLUTIONDATE = 'resolutiondate';
 
     /** @var array<string, mixed> */
     private array $fields = [];
@@ -28,6 +46,8 @@ final class Issue implements ApiResponse
     private string $key = '';
 
     private string $id = '';
+
+    private string $self = '';
 
     private function __construct() {}
 
@@ -40,6 +60,7 @@ final class Issue implements ApiResponse
 
         $model->setId($data[self::ID] ?? '');
         $model->setKey($data[self::KEY] ?? '');
+        $model->setSelf($data[self::SELF] ?? '');
         $model->setFields(array_filter($data[self::FIELDS] ?? [], fn ($v) => $v !== null));
 
         return $model;
@@ -66,6 +87,83 @@ final class Issue implements ApiResponse
         return $this->fields[self::DESCRIPTION] ?? null;
     }
 
+    public function getStatus(): ?Status
+    {
+        $data = $this->fields[self::STATUS] ?? null;
+
+        return $data !== null ? Status::make($data) : null;
+    }
+
+    public function getAssignee(): ?User
+    {
+        $data = $this->fields[self::ASSIGNEE] ?? null;
+
+        return $data !== null ? User::make($data) : null;
+    }
+
+    public function getReporter(): ?User
+    {
+        $data = $this->fields[self::REPORTER] ?? null;
+
+        return $data !== null ? User::make($data) : null;
+    }
+
+    public function getPriority(): ?Priority
+    {
+        $data = $this->fields[self::PRIORITY] ?? null;
+
+        return $data !== null ? Priority::make($data) : null;
+    }
+
+    public function getIssueType(): ?IssueType
+    {
+        $data = $this->fields[self::ISSUETYPE] ?? null;
+
+        return $data !== null ? IssueType::make($data) : null;
+    }
+
+    public function getProject(): ?Project
+    {
+        $data = $this->fields[self::PROJECT] ?? null;
+
+        return $data !== null ? Project::make($data) : null;
+    }
+
+    /**
+     * @return array<string>|null
+     */
+    public function getLabels(): ?array
+    {
+        return $this->fields[self::LABELS] ?? null;
+    }
+
+    public function getCreated(): ?string
+    {
+        return $this->fields[self::CREATED] ?? null;
+    }
+
+    public function getUpdated(): ?string
+    {
+        return $this->fields[self::UPDATED] ?? null;
+    }
+
+    public function getDueDate(): ?string
+    {
+        return $this->fields[self::DUEDATE] ?? null;
+    }
+
+    public function getResolution(): ?Resolution
+    {
+        $data = $this->fields[self::RESOLUTION] ?? null;
+
+        return $data !== null ? Resolution::make($data) : null;
+    }
+
+    public function getResolutionDate(): ?string
+    {
+        return $this->fields[self::RESOLUTIONDATE] ?? null;
+    }
+
     public function getId(): string
     {
         return $this->id;
@@ -74,6 +172,11 @@ final class Issue implements ApiResponse
     public function getKey(): string
     {
         return $this->key;
+    }
+
+    public function getSelf(): string
+    {
+        return $this->self;
     }
 
     public function getLink(): string
@@ -108,6 +211,13 @@ final class Issue implements ApiResponse
     public function setKey(string $value): self
     {
         $this->key = $value;
+
+        return $this;
+    }
+
+    public function setSelf(string $value): self
+    {
+        $this->self = $value;
 
         return $this;
     }

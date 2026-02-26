@@ -23,6 +23,7 @@ class FieldsTest extends TestCase
                 'searchable' => true,
                 'clauseNames' => ['summary'],
                 'schema' => ['type' => 'string'],
+                'scope' => [],
             ],
             [
                 'id' => 'customfield_10001',
@@ -34,6 +35,7 @@ class FieldsTest extends TestCase
                 'searchable' => true,
                 'clauseNames' => ['cf[10001]'],
                 'schema' => ['type' => 'number'],
+                'scope' => ['type' => 'PROJECT', 'project' => ['id' => '10000']],
             ],
             [
                 'id' => 'customfield_10002',
@@ -45,6 +47,7 @@ class FieldsTest extends TestCase
                 'searchable' => true,
                 'clauseNames' => ['cf[10002]'],
                 'schema' => ['type' => 'string'],
+                'scope' => [],
             ],
         ];
     }

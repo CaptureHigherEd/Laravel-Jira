@@ -12,9 +12,9 @@ class UsersTest extends TestCase
     private function userData(): array
     {
         return [
-            ['accountId' => 'u1', 'displayName' => 'Alice', 'emailAddress' => 'alice@example.com', 'active' => true],
-            ['accountId' => 'u2', 'displayName' => 'Bob', 'emailAddress' => 'bob@example.com', 'active' => true],
-            ['accountId' => 'u3', 'displayName' => 'Charlie', 'emailAddress' => 'charlie@example.com', 'active' => false],
+            ['accountId' => 'u1', 'displayName' => 'Alice', 'emailAddress' => 'alice@example.com', 'active' => true, 'self' => '', 'accountType' => '', 'timeZone' => '', 'locale' => '', 'avatarUrls' => []],
+            ['accountId' => 'u2', 'displayName' => 'Bob', 'emailAddress' => 'bob@example.com', 'active' => true, 'self' => '', 'accountType' => '', 'timeZone' => '', 'locale' => '', 'avatarUrls' => []],
+            ['accountId' => 'u3', 'displayName' => 'Charlie', 'emailAddress' => 'charlie@example.com', 'active' => false, 'self' => '', 'accountType' => '', 'timeZone' => '', 'locale' => '', 'avatarUrls' => []],
         ];
     }
 
@@ -55,7 +55,7 @@ class UsersTest extends TestCase
     public function test_get_active_users_returns_empty_when_none_active(): void
     {
         $users = Users::make([
-            ['accountId' => 'u1', 'displayName' => 'A', 'emailAddress' => 'a@example.com', 'active' => false],
+            ['accountId' => 'u1', 'displayName' => 'A', 'emailAddress' => 'a@example.com', 'active' => false, 'self' => '', 'accountType' => '', 'timeZone' => '', 'locale' => '', 'avatarUrls' => []],
         ]);
 
         $this->assertSame([], array_values($users->getActiveUsers()), 'getActiveUsers() should return an empty array when all users are inactive');

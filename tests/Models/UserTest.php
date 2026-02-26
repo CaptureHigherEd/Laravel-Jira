@@ -16,6 +16,11 @@ class UserTest extends TestCase
             'displayName' => 'Jane Smith',
             'emailAddress' => 'jane@example.com',
             'active' => true,
+            'self' => 'https://example.atlassian.net/rest/api/3/user?accountId=abc123',
+            'accountType' => 'atlassian',
+            'timeZone' => 'Australia/Sydney',
+            'locale' => 'en_AU',
+            'avatarUrls' => ['16x16' => 'https://example.com/16.png', '48x48' => 'https://example.com/48.png'],
         ];
 
         $user = User::make($data);
@@ -31,6 +36,11 @@ class UserTest extends TestCase
         $this->assertSame('', $user->getName(), 'User display name should default to an empty string when not provided');
         $this->assertSame('', $user->getEmail(), 'User email address should default to an empty string when not provided');
         $this->assertFalse($user->getActive(), 'User active flag should default to false when not provided');
+        $this->assertSame('', $user->getSelf(), 'User self URL should default to an empty string when not provided');
+        $this->assertSame('', $user->getAccountType(), 'User accountType should default to an empty string when not provided');
+        $this->assertSame('', $user->getTimeZone(), 'User timeZone should default to an empty string when not provided');
+        $this->assertSame('', $user->getLocale(), 'User locale should default to an empty string when not provided');
+        $this->assertSame([], $user->getAvatarUrls(), 'User avatarUrls should default to an empty array when not provided');
     }
 
     // ── Type casting ──────────────────────────────────────────────────────

@@ -3,6 +3,12 @@
 namespace CaptureHigherEd\LaravelJira\Tests\Models;
 
 use CaptureHigherEd\LaravelJira\Models\Issue;
+use CaptureHigherEd\LaravelJira\Models\IssueType;
+use CaptureHigherEd\LaravelJira\Models\Priority;
+use CaptureHigherEd\LaravelJira\Models\Project;
+use CaptureHigherEd\LaravelJira\Models\Resolution;
+use CaptureHigherEd\LaravelJira\Models\Status;
+use CaptureHigherEd\LaravelJira\Models\User;
 use CaptureHigherEd\LaravelJira\Tests\Concerns\UsesTestbench;
 use Orchestra\Testbench\TestCase;
 
@@ -17,13 +23,15 @@ class IssueTest extends TestCase
         $data = [
             'id' => '10001',
             'key' => 'KEY-1',
-            'fields' => ['summary' => 'Test Issue', 'priority' => 'High'],
+            'self' => 'https://example.atlassian.net/rest/api/3/issue/10001',
+            'fields' => ['summary' => 'Test Issue'],
         ];
 
         $issue = Issue::make($data);
 
         $this->assertSame('10001', $issue->getId(), 'Issue ID should match the input id value');
         $this->assertSame('KEY-1', $issue->getKey(), 'Issue key should match the input key value');
+        $this->assertSame('https://example.atlassian.net/rest/api/3/issue/10001', $issue->getSelf(), 'Issue self URL should match the input self value');
         $this->assertSame('Test Issue', $issue->getSummary(), 'Issue summary should match the summary field from the input data');
     }
 
@@ -128,6 +136,119 @@ class IssueTest extends TestCase
         $issue->setReporter('abc123');
 
         $this->assertSame(['id' => 'abc123'], $issue->getFields()['reporter'], 'setReporter() should store the reporter as an array with an id property');
+    }
+
+    // ── Typed field getters ───────────────────────────────────────────────
+
+    public function test_get_status_returns_status_model(): void
+    {
+        $issue = Issue::make(['id' => '1', 'key' => 'K-1', 'fields' => [
+            'status' => ['id' => '1', 'name' => 'In Progress', 'description' => '', 'iconUrl' => '', 'self' => '', 'statusCategory' => []],
+        ]]);
+
+        $this->assertInstanceOf(Status::class, $issue->getStatus(), 'getStatus() should return a Status instance when status field is present');
+        $this->assertSame('In Progress', $issue->getStatus()?->getName(), 'getStatus() should hydrate the status name correctly');
+    }
+
+    public function test_get_status_returns_null_when_absent(): void
+    {
+        $issue = Issue::make(['id' => '1', 'key' => 'K-1', 'fields' => []]);
+
+        $this->assertNull($issue->getStatus(), 'getStatus() should return null when the status field is not present');
+    }
+
+    public function test_get_assignee_returns_user_model(): void
+    {
+        $issue = Issue::make(['id' => '1', 'key' => 'K-1', 'fields' => [
+            'assignee' => ['accountId' => 'u1', 'displayName' => 'Alice', 'emailAddress' => 'alice@example.com', 'active' => true],
+        ]]);
+
+        $this->assertInstanceOf(User::class, $issue->getAssignee(), 'getAssignee() should return a User instance when assignee field is present');
+        $this->assertSame('u1', $issue->getAssignee()?->getKey(), 'getAssignee() should hydrate the accountId correctly');
+    }
+
+    public function test_get_reporter_returns_user_model(): void
+    {
+        $issue = Issue::make(['id' => '1', 'key' => 'K-1', 'fields' => [
+            'reporter' => ['accountId' => 'u2', 'displayName' => 'Bob', 'emailAddress' => 'bob@example.com', 'active' => true],
+        ]]);
+
+        $this->assertInstanceOf(User::class, $issue->getReporter(), 'getReporter() should return a User instance when reporter field is present');
+        $this->assertSame('u2', $issue->getReporter()?->getKey(), 'getReporter() should hydrate the accountId correctly');
+    }
+
+    public function test_get_priority_returns_priority_model(): void
+    {
+        $issue = Issue::make(['id' => '1', 'key' => 'K-1', 'fields' => [
+            'priority' => ['id' => '2', 'name' => 'High', 'description' => '', 'iconUrl' => '', 'self' => '', 'statusColor' => '', 'isDefault' => false, 'avatarId' => 0],
+        ]]);
+
+        $this->assertInstanceOf(Priority::class, $issue->getPriority(), 'getPriority() should return a Priority instance when priority field is present');
+        $this->assertSame('High', $issue->getPriority()?->getName(), 'getPriority() should hydrate the priority name correctly');
+    }
+
+    public function test_get_issue_type_returns_issue_type_model(): void
+    {
+        $issue = Issue::make(['id' => '1', 'key' => 'K-1', 'fields' => [
+            'issuetype' => ['id' => '10001', 'name' => 'Bug', 'description' => '', 'subtask' => false, 'iconUrl' => '', 'self' => ''],
+        ]]);
+
+        $this->assertInstanceOf(IssueType::class, $issue->getIssueType(), 'getIssueType() should return an IssueType instance when issuetype field is present');
+        $this->assertSame('Bug', $issue->getIssueType()?->getName(), 'getIssueType() should hydrate the issue type name correctly');
+    }
+
+    public function test_get_project_returns_project_model(): void
+    {
+        $issue = Issue::make(['id' => '1', 'key' => 'K-1', 'fields' => [
+            'project' => ['id' => '10000', 'key' => 'TEST', 'name' => 'Test Project', 'self' => '', 'projectTypeKey' => 'software', 'simplified' => false, 'avatarUrls' => []],
+        ]]);
+
+        $this->assertInstanceOf(Project::class, $issue->getProject(), 'getProject() should return a Project instance when project field is present');
+        $this->assertSame('TEST', $issue->getProject()?->getKey(), 'getProject() should hydrate the project key correctly');
+    }
+
+    public function test_get_resolution_returns_resolution_model(): void
+    {
+        $issue = Issue::make(['id' => '1', 'key' => 'K-1', 'fields' => [
+            'resolution' => ['id' => '1', 'name' => 'Done', 'description' => 'Work is done.', 'self' => ''],
+        ]]);
+
+        $this->assertInstanceOf(Resolution::class, $issue->getResolution(), 'getResolution() should return a Resolution instance when resolution field is present');
+        $this->assertSame('Done', $issue->getResolution()?->getName(), 'getResolution() should hydrate the resolution name correctly');
+    }
+
+    public function test_get_scalar_field_getters(): void
+    {
+        $issue = Issue::make(['id' => '1', 'key' => 'K-1', 'fields' => [
+            'created' => '2024-01-01T00:00:00.000+0000',
+            'updated' => '2024-01-02T00:00:00.000+0000',
+            'duedate' => '2024-06-30',
+            'resolutiondate' => '2024-01-15T12:00:00.000+0000',
+            'labels' => ['backend', 'urgent'],
+        ]]);
+
+        $this->assertSame('2024-01-01T00:00:00.000+0000', $issue->getCreated(), 'getCreated() should return the created timestamp from fields');
+        $this->assertSame('2024-01-02T00:00:00.000+0000', $issue->getUpdated(), 'getUpdated() should return the updated timestamp from fields');
+        $this->assertSame('2024-06-30', $issue->getDueDate(), 'getDueDate() should return the due date from fields');
+        $this->assertSame('2024-01-15T12:00:00.000+0000', $issue->getResolutionDate(), 'getResolutionDate() should return the resolution date from fields');
+        $this->assertSame(['backend', 'urgent'], $issue->getLabels(), 'getLabels() should return the labels array from fields');
+    }
+
+    public function test_typed_getters_return_null_when_fields_absent(): void
+    {
+        $issue = Issue::make(['id' => '1', 'key' => 'K-1', 'fields' => []]);
+
+        $this->assertNull($issue->getAssignee(), 'getAssignee() should return null when assignee field is not present');
+        $this->assertNull($issue->getReporter(), 'getReporter() should return null when reporter field is not present');
+        $this->assertNull($issue->getPriority(), 'getPriority() should return null when priority field is not present');
+        $this->assertNull($issue->getIssueType(), 'getIssueType() should return null when issuetype field is not present');
+        $this->assertNull($issue->getProject(), 'getProject() should return null when project field is not present');
+        $this->assertNull($issue->getResolution(), 'getResolution() should return null when resolution field is not present');
+        $this->assertNull($issue->getCreated(), 'getCreated() should return null when created field is not present');
+        $this->assertNull($issue->getUpdated(), 'getUpdated() should return null when updated field is not present');
+        $this->assertNull($issue->getDueDate(), 'getDueDate() should return null when duedate field is not present');
+        $this->assertNull($issue->getResolutionDate(), 'getResolutionDate() should return null when resolutiondate field is not present');
+        $this->assertNull($issue->getLabels(), 'getLabels() should return null when labels field is not present');
     }
 
     // ── Computed properties ───────────────────────────────────────────────
