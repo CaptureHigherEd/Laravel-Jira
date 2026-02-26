@@ -8,6 +8,8 @@ use PHPUnit\Framework\TestCase;
 
 class SearchTest extends TestCase
 {
+    // ── make & hydration ──────────────────────────────────────────────────
+
     public function test_make_roundtrip(): void
     {
         $issue1 = ['id' => '1', 'key' => 'KEY-1', 'fields' => ['summary' => 'First']];

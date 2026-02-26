@@ -5,21 +5,17 @@ namespace CaptureHigherEd\LaravelJira\Tests\Api;
 use CaptureHigherEd\LaravelJira\Api\Fields;
 use CaptureHigherEd\LaravelJira\Models\Field;
 use CaptureHigherEd\LaravelJira\Models\Fields as ModelsFields;
-use CaptureHigherEd\LaravelJira\Providers\IntegrationServiceProvider;
 use CaptureHigherEd\LaravelJira\Tests\Concerns\MocksHttpResponses;
+use CaptureHigherEd\LaravelJira\Tests\Concerns\UsesTestbench;
 use Orchestra\Testbench\TestCase;
 
 class FieldsTest extends TestCase
 {
     use MocksHttpResponses;
-
-    protected function getPackageProviders($app): array
-    {
-        return [IntegrationServiceProvider::class];
-    }
+    use UsesTestbench;
 
     /** @return array<string, mixed> */
-    private function createMetaResponse(): array
+    private function createMetaData(): array
     {
         return [
             'projects' => [
@@ -48,6 +44,21 @@ class FieldsTest extends TestCase
         ];
     }
 
+    private function makeCustomField(string $id): Field
+    {
+        return Field::make(['id' => $id, 'key' => $id, 'name' => $id, 'custom' => true, 'orderable' => false, 'navigable' => false, 'searchable' => false, 'clauseNames' => [], 'schema' => []]);
+    }
+
+    private function makeFieldsApiWithCreateMeta(): Fields
+    {
+        $response = $this->jsonResponse($this->createMetaData());
+        $client = $this->mockClientExpecting('GET', 'issue/createmeta', ['query' => ['expand' => 'projects.issuetypes.fields']], $response);
+
+        return new Fields($client);
+    }
+
+    // ── index ─────────────────────────────────────────────────────────────
+
     public function test_index(): void
     {
         $fieldData = [
@@ -63,55 +74,51 @@ class FieldsTest extends TestCase
         $this->assertCount(1, $result->getFields(), 'Fields::index() should return exactly 1 field from the response');
     }
 
+    // ── getFieldOptions ───────────────────────────────────────────────────
+
     public function test_get_field_options_happy_path(): void
     {
-        $meta = $this->createMetaResponse();
-        $response = $this->jsonResponse($meta);
-        $client = $this->mockClientExpecting('GET', 'issue/createmeta', ['query' => ['expand' => 'projects.issuetypes.fields']], $response);
-        $api = new Fields($client);
+        $api = $this->makeFieldsApiWithCreateMeta();
+        $field = $this->makeCustomField('customfield_10001');
 
-        $field = Field::make(['id' => 'customfield_10001', 'key' => 'customfield_10001', 'name' => 'Priority', 'custom' => true, 'orderable' => false, 'navigable' => false, 'searchable' => false, 'clauseNames' => [], 'schema' => []]);
         $result = $api->getFieldOptions($field, 'CBE4', 'Bug');
 
         $this->assertSame(['Option A' => 'Option A', 'Option B' => 'Option B', 'Option C' => 'Option C'], $result, 'getFieldOptions() should return allowed values keyed and valued by their value string');
     }
 
-    public function test_get_field_options_project_not_found(): void
+    /** @dataProvider fieldOptionsNotFoundProvider */
+    public function test_get_field_options_not_found(string $fieldId, string $projectKey, string $issueType, string $message): void
     {
-        $meta = $this->createMetaResponse();
-        $response = $this->jsonResponse($meta);
-        $client = $this->mockClientExpecting('GET', 'issue/createmeta', ['query' => ['expand' => 'projects.issuetypes.fields']], $response);
-        $api = new Fields($client);
+        $api = $this->makeFieldsApiWithCreateMeta();
+        $field = $this->makeCustomField($fieldId);
 
-        $field = Field::make(['id' => 'customfield_10001', 'key' => 'customfield_10001', 'name' => 'Priority', 'custom' => true, 'orderable' => false, 'navigable' => false, 'searchable' => false, 'clauseNames' => [], 'schema' => []]);
-        $result = $api->getFieldOptions($field, 'NONEXISTENT', 'Bug');
+        $result = $api->getFieldOptions($field, $projectKey, $issueType);
 
-        $this->assertSame([], $result, 'getFieldOptions() should return an empty array when the specified project key does not exist in the metadata');
+        $this->assertSame([], $result, $message);
     }
 
-    public function test_get_field_options_issue_type_not_found(): void
+    /** @return array<string, array{string, string, string, string}> */
+    public static function fieldOptionsNotFoundProvider(): array
     {
-        $meta = $this->createMetaResponse();
-        $response = $this->jsonResponse($meta);
-        $client = $this->mockClientExpecting('GET', 'issue/createmeta', ['query' => ['expand' => 'projects.issuetypes.fields']], $response);
-        $api = new Fields($client);
-
-        $field = Field::make(['id' => 'customfield_10001', 'key' => 'customfield_10001', 'name' => 'Priority', 'custom' => true, 'orderable' => false, 'navigable' => false, 'searchable' => false, 'clauseNames' => [], 'schema' => []]);
-        $result = $api->getFieldOptions($field, 'CBE4', 'Story');
-
-        $this->assertSame([], $result, 'getFieldOptions() should return an empty array when the specified issue type does not exist in the project');
-    }
-
-    public function test_get_field_options_field_not_found(): void
-    {
-        $meta = $this->createMetaResponse();
-        $response = $this->jsonResponse($meta);
-        $client = $this->mockClientExpecting('GET', 'issue/createmeta', ['query' => ['expand' => 'projects.issuetypes.fields']], $response);
-        $api = new Fields($client);
-
-        $field = Field::make(['id' => 'customfield_99999', 'key' => 'customfield_99999', 'name' => 'Nonexistent', 'custom' => true, 'orderable' => false, 'navigable' => false, 'searchable' => false, 'clauseNames' => [], 'schema' => []]);
-        $result = $api->getFieldOptions($field, 'CBE4', 'Bug');
-
-        $this->assertSame([], $result, 'getFieldOptions() should return an empty array when the field ID does not exist in the issue type fields');
+        return [
+            'project not found' => [
+                'customfield_10001',
+                'NONEXISTENT',
+                'Bug',
+                'getFieldOptions() should return an empty array when the specified project key does not exist in the metadata',
+            ],
+            'issue type not found' => [
+                'customfield_10001',
+                'CBE4',
+                'Story',
+                'getFieldOptions() should return an empty array when the specified issue type does not exist in the project',
+            ],
+            'field not found' => [
+                'customfield_99999',
+                'CBE4',
+                'Bug',
+                'getFieldOptions() should return an empty array when the field ID does not exist in the issue type fields',
+            ],
+        ];
     }
 }

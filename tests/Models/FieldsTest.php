@@ -49,6 +49,8 @@ class FieldsTest extends TestCase
         ];
     }
 
+    // ── make & toArray ────────────────────────────────────────────────────
+
     public function test_make_roundtrip(): void
     {
         $data = $this->fieldData();
@@ -66,6 +68,8 @@ class FieldsTest extends TestCase
         $this->assertSame([], $fields->getFields(), 'Fields collection should be an empty array when constructed with no data');
         $this->assertSame([], $fields->toArray(), 'Fields::toArray() should return an empty array when no fields are present');
     }
+
+    // ── Custom field lookup ───────────────────────────────────────────────
 
     public function test_get_custom_fields_filters_by_key_prefix(): void
     {

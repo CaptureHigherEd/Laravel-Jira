@@ -18,6 +18,8 @@ class UsersTest extends TestCase
         ];
     }
 
+    // ── make & toArray ────────────────────────────────────────────────────
+
     public function test_make_roundtrip(): void
     {
         $data = $this->userData();
@@ -35,6 +37,8 @@ class UsersTest extends TestCase
         $this->assertSame([], $users->getUsers(), 'Users collection should be an empty array when constructed with no data');
         $this->assertSame([], $users->toArray(), 'Users::toArray() should return an empty array when no users are present');
     }
+
+    // ── Filtering ─────────────────────────────────────────────────────────
 
     public function test_get_active_users_filters_correctly(): void
     {

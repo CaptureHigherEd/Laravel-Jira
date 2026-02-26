@@ -7,6 +7,8 @@ use PHPUnit\Framework\TestCase;
 
 class UserTest extends TestCase
 {
+    // ── make & toArray ────────────────────────────────────────────────────
+
     public function test_make_roundtrip(): void
     {
         $data = [
@@ -30,6 +32,8 @@ class UserTest extends TestCase
         $this->assertSame('', $user->getEmail(), 'User email address should default to an empty string when not provided');
         $this->assertFalse($user->getActive(), 'User active flag should default to false when not provided');
     }
+
+    // ── Type casting ──────────────────────────────────────────────────────
 
     public function test_active_is_boolean(): void
     {

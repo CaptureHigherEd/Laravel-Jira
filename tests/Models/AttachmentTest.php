@@ -7,6 +7,8 @@ use PHPUnit\Framework\TestCase;
 
 class AttachmentTest extends TestCase
 {
+    // ── make & toArray ────────────────────────────────────────────────────
+
     public function test_make_roundtrip(): void
     {
         $data = [
@@ -34,6 +36,8 @@ class AttachmentTest extends TestCase
         $this->assertSame('', $attachment->getContent(), 'Attachment content URL should default to an empty string when not provided');
         $this->assertSame('', $attachment->getSelf(), 'Attachment self URL should default to an empty string when not provided');
     }
+
+    // ── Type casting ──────────────────────────────────────────────────────
 
     public function test_size_cast_to_int(): void
     {

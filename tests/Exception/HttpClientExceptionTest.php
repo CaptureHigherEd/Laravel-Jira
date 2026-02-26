@@ -56,7 +56,7 @@ class HttpClientExceptionTest extends TestCase
 
     public function test_bad_request_extracts_json_message(): void
     {
-        $response = $this->jsonErrorResponse(400, ['message' => 'Invalid field value']);
+        $response = $this->jsonResponse(['message' => 'Invalid field value'], 400);
         $e = HttpClientException::badRequest($response);
 
         $this->assertSame(400, $e->getCode(), 'badRequest() factory should set the exception code to 400');
@@ -73,7 +73,7 @@ class HttpClientExceptionTest extends TestCase
 
     public function test_bad_request_falls_back_when_no_message_key(): void
     {
-        $response = $this->jsonErrorResponse(400, ['errorMessages' => ['Something failed']]);
+        $response = $this->jsonResponse(['errorMessages' => ['Something failed']], 400);
         $e = HttpClientException::badRequest($response);
 
         // Falls back to raw JSON string since no 'message' key
@@ -83,56 +83,34 @@ class HttpClientExceptionTest extends TestCase
 
     // ── Factory: simple factories ────────────────────────────────────────
 
-    public function test_unauthorized_message(): void
+    /** @dataProvider simpleFactoryProvider */
+    public function test_simple_factory(string $method, int $status, string $needle, bool $lowercase): void
     {
-        $response = $this->plainErrorResponse(401, '');
-        $e = HttpClientException::unauthorized($response);
+        $response = $this->plainErrorResponse($status, '');
+        $e = HttpClientException::$method($response);
+        $message = $lowercase ? strtolower($e->getMessage()) : $e->getMessage();
 
-        $this->assertSame(401, $e->getCode(), 'unauthorized() factory should set the exception code to 401');
-        $this->assertStringContainsString('credentials', $e->getMessage(), 'unauthorized() factory should mention credentials in the exception message');
+        $this->assertSame($status, $e->getCode(), "$method() factory should set the exception code to $status");
+        $this->assertStringContainsString($needle, $message, "$method() factory should include '$needle' in the exception message");
     }
 
-    public function test_request_failed_message(): void
+    /** @return array<string, array{string, int, string, bool}> */
+    public static function simpleFactoryProvider(): array
     {
-        $response = $this->plainErrorResponse(402, '');
-        $e = HttpClientException::requestFailed($response);
-
-        $this->assertSame(402, $e->getCode(), 'requestFailed() factory should set the exception code to 402');
-        $this->assertStringContainsString('valid', $e->getMessage(), 'requestFailed() factory should mention valid in the exception message');
-    }
-
-    public function test_not_found_message(): void
-    {
-        $response = $this->plainErrorResponse(404, '');
-        $e = HttpClientException::notFound($response);
-
-        $this->assertSame(404, $e->getCode(), 'notFound() factory should set the exception code to 404');
-        $this->assertStringContainsString('does not exist', $e->getMessage(), 'notFound() factory should indicate the resource does not exist in the exception message');
-    }
-
-    public function test_conflict_message(): void
-    {
-        $response = $this->plainErrorResponse(409, '');
-        $e = HttpClientException::conflict($response);
-
-        $this->assertSame(409, $e->getCode(), 'conflict() factory should set the exception code to 409');
-        $this->assertStringContainsString('conflict', strtolower($e->getMessage()), 'conflict() factory should mention conflict in the exception message');
-    }
-
-    public function test_payload_too_large_message(): void
-    {
-        $response = $this->plainErrorResponse(413, '');
-        $e = HttpClientException::payloadTooLarge($response);
-
-        $this->assertSame(413, $e->getCode(), 'payloadTooLarge() factory should set the exception code to 413');
-        $this->assertStringContainsString('too large', strtolower($e->getMessage()), 'payloadTooLarge() factory should indicate the payload is too large in the exception message');
+        return [
+            'unauthorized' => ['unauthorized',    401, 'credentials',  false],
+            'requestFailed' => ['requestFailed',   402, 'valid',        false],
+            'notFound' => ['notFound',         404, 'does not exist', false],
+            'conflict' => ['conflict',         409, 'conflict',    true],
+            'payloadTooLarge' => ['payloadTooLarge',  413, 'too large',   true],
+        ];
     }
 
     // ── Factory: forbidden ───────────────────────────────────────────────
 
     public function test_forbidden_extracts_json_error_key(): void
     {
-        $response = $this->jsonErrorResponse(403, ['Error' => 'Access denied']);
+        $response = $this->jsonResponse(['Error' => 'Access denied'], 403);
         $e = HttpClientException::forbidden($response);
 
         $this->assertSame(403, $e->getCode(), 'forbidden() factory should set the exception code to 403');
@@ -171,7 +149,7 @@ class HttpClientExceptionTest extends TestCase
 
     public function test_unprocessable_entity_extracts_error_messages(): void
     {
-        $response = $this->jsonErrorResponse(422, ['errorMessages' => ['Field A is required', 'Field B is invalid']]);
+        $response = $this->jsonResponse(['errorMessages' => ['Field A is required', 'Field B is invalid']], 422);
         $e = HttpClientException::unprocessableEntity($response);
 
         $this->assertSame(422, $e->getCode(), 'unprocessableEntity() factory should set the exception code to 422');

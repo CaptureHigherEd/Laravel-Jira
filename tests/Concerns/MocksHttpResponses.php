@@ -41,14 +41,6 @@ trait MocksHttpResponses
         return new Response($status, ['Content-Type' => 'text/plain'], $body);
     }
 
-    /**
-     * @param  array<string, mixed>  $body
-     */
-    protected function jsonErrorResponse(int $status, array $body): Response
-    {
-        return new Response($status, ['Content-Type' => 'application/json'], json_encode($body));
-    }
-
     protected function mockClient(ResponseInterface $response): ClientInterface
     {
         $client = $this->createMock(ClientInterface::class);

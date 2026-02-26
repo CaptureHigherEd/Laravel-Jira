@@ -6,21 +6,14 @@ use CaptureHigherEd\LaravelJira\Api\Fields;
 use CaptureHigherEd\LaravelJira\Api\Issues;
 use CaptureHigherEd\LaravelJira\Api\Users;
 use CaptureHigherEd\LaravelJira\Jira;
-use CaptureHigherEd\LaravelJira\Providers\IntegrationServiceProvider;
+use CaptureHigherEd\LaravelJira\Tests\Concerns\UsesTestbench;
 use Orchestra\Testbench\TestCase;
 
 class JiraTest extends TestCase
 {
-    protected function getPackageProviders($app): array
-    {
-        return [IntegrationServiceProvider::class];
-    }
+    use UsesTestbench;
 
-    protected function defineEnvironment($app): void
-    {
-        $app['config']->set('jira.token', base64_encode('test@example.com:fake-token'));
-        $app['config']->set('jira.domain', 'https://test.atlassian.net');
-    }
+    // ── Service resolution ────────────────────────────────────────────────
 
     public function test_jira_service_can_be_resolved(): void
     {
@@ -37,6 +30,8 @@ class JiraTest extends TestCase
 
         $this->assertNull($jira, 'Jira service should return null when the API token is not configured');
     }
+
+    // ── API accessors ─────────────────────────────────────────────────────
 
     public function test_jira_exposes_issues_api(): void
     {

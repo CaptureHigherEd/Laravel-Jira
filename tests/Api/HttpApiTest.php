@@ -15,6 +15,12 @@ class HttpApiTest extends TestCase
     use MocksHttpResponses;
 
     /** @return HttpApi&object{callHydrateResponse: callable, callHandleErrors: callable, callHttpGet: callable, callHttpPost: callable, callHttpPut: callable, callHttpDelete: callable, callHttpPostWithAttachments: callable} */
+    private function makeApiWithResponse(ResponseInterface $response): object
+    {
+        return $this->makeApi($this->mockClient($response));
+    }
+
+    /** @return HttpApi&object{callHydrateResponse: callable, callHandleErrors: callable, callHttpGet: callable, callHttpPost: callable, callHttpPut: callable, callHttpDelete: callable, callHttpPostWithAttachments: callable} */
     private function makeApi(ClientInterface $client): object
     {
         return new class($client) extends HttpApi
@@ -61,7 +67,7 @@ class HttpApiTest extends TestCase
     public function test_hydrate_200_with_class(): void
     {
         $response = $this->jsonResponse(['issues' => [['id' => '1', 'key' => 'KEY-1', 'fields' => []]]]);
-        $api = $this->makeApi($this->mockClient($response));
+        $api = $this->makeApiWithResponse($response);
 
         $result = $api->callHydrateResponse($response, Search::class);
 
@@ -72,7 +78,7 @@ class HttpApiTest extends TestCase
     public function test_hydrate_201_with_class(): void
     {
         $response = $this->mockResponse(201, ['id' => '10', 'key' => 'KEY-10', 'fields' => []]);
-        $api = $this->makeApi($this->mockClient($response));
+        $api = $this->makeApiWithResponse($response);
 
         $result = $api->callHydrateResponse($response, Search::class);
 
@@ -82,7 +88,7 @@ class HttpApiTest extends TestCase
     public function test_hydrate_204_with_class(): void
     {
         $response = $this->noContentResponse();
-        $api = $this->makeApi($this->mockClient($response));
+        $api = $this->makeApiWithResponse($response);
 
         $result = $api->callHydrateResponse($response, Search::class);
 
@@ -93,7 +99,7 @@ class HttpApiTest extends TestCase
     public function test_hydrate_204_without_class(): void
     {
         $response = $this->noContentResponse();
-        $api = $this->makeApi($this->mockClient($response));
+        $api = $this->makeApiWithResponse($response);
 
         $result = $api->callHydrateResponse($response);
 
@@ -103,7 +109,7 @@ class HttpApiTest extends TestCase
     public function test_hydrate_empty_body_with_class(): void
     {
         $response = $this->mockResponse(200, '');
-        $api = $this->makeApi($this->mockClient($response));
+        $api = $this->makeApiWithResponse($response);
 
         $result = $api->callHydrateResponse($response, Search::class);
 
@@ -113,7 +119,7 @@ class HttpApiTest extends TestCase
     public function test_hydrate_empty_body_without_class(): void
     {
         $response = $this->mockResponse(200, '');
-        $api = $this->makeApi($this->mockClient($response));
+        $api = $this->makeApiWithResponse($response);
 
         $result = $api->callHydrateResponse($response);
 
@@ -124,7 +130,7 @@ class HttpApiTest extends TestCase
     {
         $data = ['key' => 'value', 'count' => 3];
         $response = $this->jsonResponse($data);
-        $api = $this->makeApi($this->mockClient($response));
+        $api = $this->makeApiWithResponse($response);
 
         $result = $api->callHydrateResponse($response);
 
@@ -134,7 +140,7 @@ class HttpApiTest extends TestCase
     public function test_hydrate_invalid_json_returns_empty_array(): void
     {
         $response = $this->mockResponse(200, 'not-valid-json', ['Content-Type' => 'application/json']);
-        $api = $this->makeApi($this->mockClient($response));
+        $api = $this->makeApiWithResponse($response);
 
         $result = $api->callHydrateResponse($response);
 
@@ -147,7 +153,7 @@ class HttpApiTest extends TestCase
     public function test_handle_errors_throws_for_status(int $status): void
     {
         $response = $this->plainErrorResponse($status, 'error');
-        $api = $this->makeApi($this->mockClient($response));
+        $api = $this->makeApiWithResponse($response);
 
         $this->expectException(HttpClientException::class);
 

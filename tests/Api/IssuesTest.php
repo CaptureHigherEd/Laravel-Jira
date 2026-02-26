@@ -14,6 +14,8 @@ class IssuesTest extends TestCase
 {
     use MocksHttpResponses;
 
+    // ── CRUD ──────────────────────────────────────────────────────────────
+
     public function test_index(): void
     {
         $response = $this->jsonResponse([
@@ -51,6 +53,8 @@ class IssuesTest extends TestCase
         $this->assertInstanceOf(Issue::class, $result, 'Issues::create() should return an Issue instance');
         $this->assertSame('KEY-11', $result->getKey(), 'Issues::create() should return the newly created issue with the correct key');
     }
+
+    // ── Attachments & comments ────────────────────────────────────────────
 
     public function test_attach(): void
     {
@@ -98,6 +102,8 @@ class IssuesTest extends TestCase
 
         $this->assertInstanceOf(Issue::class, $result, 'Issues::update() should return an Issue instance');
     }
+
+    // ── Metadata ──────────────────────────────────────────────────────────
 
     public function test_get_create_meta(): void
     {

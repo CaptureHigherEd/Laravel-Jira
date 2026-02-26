@@ -3,21 +3,14 @@
 namespace CaptureHigherEd\LaravelJira\Tests\Models;
 
 use CaptureHigherEd\LaravelJira\Models\Issue;
-use CaptureHigherEd\LaravelJira\Providers\IntegrationServiceProvider;
+use CaptureHigherEd\LaravelJira\Tests\Concerns\UsesTestbench;
 use Orchestra\Testbench\TestCase;
 
 class IssueTest extends TestCase
 {
-    protected function getPackageProviders($app): array
-    {
-        return [IntegrationServiceProvider::class];
-    }
+    use UsesTestbench;
 
-    protected function defineEnvironment($app): void
-    {
-        $app['config']->set('jira.token', base64_encode('test@example.com:fake-token'));
-        $app['config']->set('jira.domain', 'https://test.atlassian.net');
-    }
+    // ── make & toArray ────────────────────────────────────────────────────
 
     public function test_make_roundtrip(): void
     {
@@ -43,6 +36,8 @@ class IssueTest extends TestCase
         $this->assertSame([], $issue->getFields(), 'Issue fields should default to an empty array when not provided');
         $this->assertNull($issue->getSummary(), 'Issue summary should be null when fields are not provided');
     }
+
+    // ── Field filtering ───────────────────────────────────────────────────
 
     public function test_make_filters_null_fields(): void
     {
@@ -85,29 +80,25 @@ class IssueTest extends TestCase
         $this->assertFalse($fields['active'], 'Issue fields active value should remain false after null filtering');
     }
 
-    public function test_set_custom_field_by_value_multi_select(): void
+    // ── Field setters ─────────────────────────────────────────────────────
+
+    /** @dataProvider customFieldByValueProvider */
+    public function test_set_custom_field_by_value(string $value, ?bool $multiSelect, mixed $expected, string $message): void
     {
         $issue = Issue::make();
-        $issue->setCustomFieldByValue('customfield_10001', 'Option A', true);
+        $issue->setCustomFieldByValue('customfield_10001', $value, $multiSelect);
 
-        $this->assertSame([['value' => 'Option A']], $issue->getFields()['customfield_10001'], 'Multi-select custom field should be stored as an array of value objects');
+        $this->assertSame($expected, $issue->getFields()['customfield_10001'], $message);
     }
 
-    public function test_set_custom_field_by_value_single_select(): void
+    /** @return array<string, array{string, ?bool, mixed, string}> */
+    public static function customFieldByValueProvider(): array
     {
-        $issue = Issue::make();
-        $issue->setCustomFieldByValue('customfield_10001', 'Option B', false);
-
-        $this->assertSame(['value' => 'Option B'], $issue->getFields()['customfield_10001'], 'Single-select custom field should be stored as a single value object');
-    }
-
-    public function test_set_custom_field_by_value_null_acts_as_single(): void
-    {
-        // null is falsy so treated as single-select
-        $issue = Issue::make();
-        $issue->setCustomFieldByValue('customfield_10001', 'Option C', null);
-
-        $this->assertSame(['value' => 'Option C'], $issue->getFields()['customfield_10001'], 'Custom field with null multi-select flag should be treated as single-select');
+        return [
+            'multi-select' => ['Option A', true,  [['value' => 'Option A']], 'Multi-select custom field should be stored as an array of value objects'],
+            'single-select' => ['Option B', false, ['value' => 'Option B'],   'Single-select custom field should be stored as a single value object'],
+            'null acts as single' => ['Option C', null,  ['value' => 'Option C'],   'Custom field with null multi-select flag should be treated as single-select'],
+        ];
     }
 
     public function test_set_project_by_key(): void
@@ -138,6 +129,8 @@ class IssueTest extends TestCase
 
         $this->assertSame(['id' => 'abc123'], $issue->getFields()['reporter'], 'setReporter() should store the reporter as an array with an id property');
     }
+
+    // ── Computed properties ───────────────────────────────────────────────
 
     public function test_get_link_uses_config_domain(): void
     {
