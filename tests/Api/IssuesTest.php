@@ -5,7 +5,9 @@ namespace CaptureHigherEd\LaravelJira\Tests\Api;
 use CaptureHigherEd\LaravelJira\Api\Issues;
 use CaptureHigherEd\LaravelJira\Models\Attachments;
 use CaptureHigherEd\LaravelJira\Models\Comment;
+use CaptureHigherEd\LaravelJira\Models\FieldMetas;
 use CaptureHigherEd\LaravelJira\Models\Issue;
+use CaptureHigherEd\LaravelJira\Models\IssueTypes;
 use CaptureHigherEd\LaravelJira\Models\Search;
 use CaptureHigherEd\LaravelJira\Tests\Concerns\MocksHttpResponses;
 use PHPUnit\Framework\TestCase;
@@ -21,7 +23,7 @@ class IssuesTest extends TestCase
         $response = $this->jsonResponse([
             'issues' => [['id' => '1', 'key' => 'KEY-1', 'fields' => ['summary' => 'Test']]],
         ]);
-        $client = $this->mockClientExpecting('GET', 'search', ['query' => ['jql' => 'project=TEST']], $response);
+        $client = $this->mockClientExpecting('GET', 'search/jql', ['query' => ['jql' => 'project=TEST']], $response);
         $api = new Issues($client);
 
         $result = $api->index(['jql' => 'project=TEST']);
@@ -94,16 +96,42 @@ class IssuesTest extends TestCase
 
     public function test_update(): void
     {
-        $response = $this->mockResponse(200, ['id' => '10', 'key' => 'KEY-10', 'fields' => ['summary' => 'Updated']]);
+        $response = $this->noContentResponse();
         $client = $this->mockClientExpecting('PUT', 'issue/KEY-10', ['json' => ['fields' => ['summary' => 'Updated']]], $response);
         $api = new Issues($client);
 
         $result = $api->update('KEY-10', ['fields' => ['summary' => 'Updated']]);
 
-        $this->assertInstanceOf(Issue::class, $result, 'Issues::update() should return an Issue instance');
+        $this->assertSame([], $result, 'Issues::update() should return an empty array for a successful 204 No Content response');
     }
 
     // ── Metadata ──────────────────────────────────────────────────────────
+
+    public function test_get_create_meta_issue_types(): void
+    {
+        $response = $this->jsonResponse(['issueTypes' => [['id' => '10001', 'name' => 'Bug', 'description' => '', 'subtask' => false, 'iconUrl' => '', 'self' => '']]]);
+        $client = $this->mockClientExpecting('GET', 'issue/createmeta/TEST/issuetypes', ['query' => []], $response);
+        $api = new Issues($client);
+
+        $result = $api->getCreateMetaIssueTypes('TEST');
+
+        $this->assertInstanceOf(IssueTypes::class, $result, 'Issues::getCreateMetaIssueTypes() should return an IssueTypes instance');
+        $this->assertCount(1, $result->getIssueTypes(), 'Issues::getCreateMetaIssueTypes() should return exactly 1 issue type from the response');
+        $this->assertSame('10001', $result->getIssueTypes()[0]->getId(), 'Issues::getCreateMetaIssueTypes() should hydrate the issue type id correctly');
+    }
+
+    public function test_get_create_meta_fields(): void
+    {
+        $response = $this->jsonResponse(['fields' => [['fieldId' => 'summary', 'name' => 'Summary', 'required' => true, 'schema' => [], 'operations' => ['set'], 'allowedValues' => []]]]);
+        $client = $this->mockClientExpecting('GET', 'issue/createmeta/TEST/issuetypes/10001', ['query' => []], $response);
+        $api = new Issues($client);
+
+        $result = $api->getCreateMetaFields('TEST', '10001');
+
+        $this->assertInstanceOf(FieldMetas::class, $result, 'Issues::getCreateMetaFields() should return a FieldMetas instance');
+        $this->assertCount(1, $result->getFields(), 'Issues::getCreateMetaFields() should return exactly 1 field from the response');
+        $this->assertSame('summary', $result->getFields()[0]->getFieldId(), 'Issues::getCreateMetaFields() should hydrate the field id correctly');
+    }
 
     public function test_get_create_meta(): void
     {

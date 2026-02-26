@@ -13,6 +13,8 @@ class Fields extends HttpApi
     /**
      * Get all fields
      *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
+     *
      * @param  array<string, mixed>  $params
      */
     public function index(array $params = []): ModelsFields
@@ -24,6 +26,9 @@ class Fields extends HttpApi
 
     /**
      * Get allowed values for a specific field within a project and issue type.
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-createmeta-get
+     * @deprecated Relies on the deprecated GET /issue/createmeta endpoint. Use Issues::getCreateMetaFields() to retrieve field metadata for a specific project and issue type.
      *
      * @param  Field  $field  The field to look up options for
      * @param  string  $projectKey  The Jira project key (e.g. "CBE4")
