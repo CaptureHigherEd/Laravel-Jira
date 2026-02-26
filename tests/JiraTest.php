@@ -1,34 +1,28 @@
 <?php
 
-namespace tests;
+namespace CaptureHigherEd\LaravelJira\Tests;
 
-use Tests\TestCase;
 use CaptureHigherEd\LaravelJira\Jira;
+use CaptureHigherEd\LaravelJira\Providers\IntegrationServiceProvider;
+use Orchestra\Testbench\TestCase;
 
-/**
- * @group Integrations
- * @group skip
- */
 class JiraTest extends TestCase
 {
-    private $jiraService;
-
-    protected function setUp(): void
+    protected function getPackageProviders($app): array
     {
-        $this->jiraService = app(Jira::class);
-
-        $this->assertNotNull($this->jiraService);
-
-        parent::setUp();
+        return [IntegrationServiceProvider::class];
     }
 
-    public function test_get_issues()
+    protected function defineEnvironment($app): void
     {
-        $issues = $this->jiraService->issues()->index();
-        $this->assertNotNull($issues);
+        $app['config']->set('jira.token', base64_encode('test@example.com:fake-token'));
+        $app['config']->set('jira.domain', 'https://test.atlassian.net');
+    }
 
-        $issueKey = $issues->getIssues()[0]->getKey();
-        $issue = $this->jiraService->issues()->show($issueKey);
-        $this->assertNotNull($issue);
+    public function test_jira_service_can_be_resolved(): void
+    {
+        $jira = $this->app->make(Jira::class);
+
+        $this->assertInstanceOf(Jira::class, $jira);
     }
 }
