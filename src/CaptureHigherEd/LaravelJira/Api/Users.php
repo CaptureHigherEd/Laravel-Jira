@@ -11,6 +11,8 @@ class Users extends HttpApi
 {
     /**
      * Get all users
+     *
+     * @param  array<string, mixed>  $params
      */
     public function index(array $params = []): ModelsUsers
     {

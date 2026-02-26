@@ -10,12 +10,12 @@ return [
      *
      * To generate a token: https://id.atlassian.com/manage-profile/security/api-tokens
      */
-    'token' => env("JIRA_API_EMAIL") && env("JIRA_API_TOKEN")
-        ? base64_encode(trim(env("JIRA_API_EMAIL") . ':' . env("JIRA_API_TOKEN")))
+    'token' => env('JIRA_API_EMAIL') && env('JIRA_API_TOKEN')
+        ? base64_encode(trim(env('JIRA_API_EMAIL').':'.env('JIRA_API_TOKEN')))
         : null,
 
     /**
      * Jira domain: ex. https://[client name].atlassian.net
      */
-    'domain' => env("JIRA_API_DOMAIN")
+    'domain' => env('JIRA_API_DOMAIN'),
 ];

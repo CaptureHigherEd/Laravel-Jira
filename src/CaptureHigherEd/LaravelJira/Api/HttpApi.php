@@ -2,9 +2,9 @@
 
 namespace CaptureHigherEd\LaravelJira\Api;
 
+use CaptureHigherEd\LaravelJira\Exception\HttpClientException;
 use GuzzleHttp\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
-use CaptureHigherEd\LaravelJira\Exception\HttpClientException;
 
 abstract class HttpApi
 {
@@ -16,60 +16,50 @@ abstract class HttpApi
     }
 
     /**
-     * @param  string               $path        Relative API path
-     * @param  array<string, mixed> $parameters  Query string parameters
+     * @param  string  $path  Relative API path
+     * @param  array<string, mixed>  $parameters  Query string parameters
      */
     protected function httpGet(string $path, array $parameters = []): ResponseInterface
     {
-        $response = $this->httpClient->get($path, ['query' => $parameters]);
-
-        return $response;
+        return $this->httpClient->request('GET', $path, ['query' => $parameters]);
     }
 
     /**
-     * @param  string               $path        Relative API path
-     * @param  array<string, mixed> $parameters  JSON request body
+     * @param  string  $path  Relative API path
+     * @param  array<string, mixed>  $parameters  JSON request body
      */
     protected function httpPost(string $path, array $parameters = []): ResponseInterface
     {
-        $response = $this->httpClient->post($path, ['json' => $parameters]);
-
-        return $response;
+        return $this->httpClient->request('POST', $path, ['json' => $parameters]);
     }
 
     /**
-     * @param  string                        $path       Relative API path
-     * @param  array<int, array<string,mixed>> $multipart Guzzle multipart form data
+     * @param  string  $path  Relative API path
+     * @param  array<int, array<string, mixed>>  $multipart  Guzzle multipart form data
      */
     protected function httpPostWithAttachments(string $path, array $multipart = []): ResponseInterface
     {
-        $response = $this->httpClient->post($path, ['multipart' => $multipart, 'headers' => [
+        return $this->httpClient->request('POST', $path, ['multipart' => $multipart, 'headers' => [
             'Accept' => 'application/json',
-            'X-Atlassian-Token' => 'no-check'
+            'X-Atlassian-Token' => 'no-check',
         ]]);
-
-        return $response;
     }
 
     /**
-     * @param  string               $path        Relative API path
-     * @param  array<string, mixed> $parameters  JSON request body
+     * @param  string  $path  Relative API path
+     * @param  array<string, mixed>  $parameters  JSON request body
      */
     protected function httpPut(string $path, array $parameters = []): ResponseInterface
     {
-        $response = $this->httpClient->put($path, ['json' => $parameters]);
-
-        return $response;
+        return $this->httpClient->request('PUT', $path, ['json' => $parameters]);
     }
 
     /**
-     * @param  string $path  Relative API path
+     * @param  string  $path  Relative API path
      */
     protected function httpDelete(string $path): ResponseInterface
     {
-        $response = $this->httpClient->delete($path);
-
-        return $response;
+        return $this->httpClient->request('DELETE', $path);
     }
 
     protected function handleErrors(ResponseInterface $response): void
@@ -108,7 +98,7 @@ abstract class HttpApi
     {
         $statusCode = $response->getStatusCode();
 
-        if (!in_array($statusCode, [200, 201, 202, 204], true)) {
+        if (! in_array($statusCode, [200, 201, 202, 204], true)) {
             $this->handleErrors($response);
         }
 
@@ -124,7 +114,7 @@ abstract class HttpApi
 
         $data = json_decode($body, true);
 
-        if (!$class) {
+        if (! $class) {
             return $data;
         }
 

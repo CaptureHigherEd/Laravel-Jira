@@ -6,12 +6,11 @@ use GuzzleHttp\Client;
 
 class HttpClientConnector
 {
-    protected string|null $endpoint;
-    protected string|null $apiKey;
+    protected ?string $endpoint;
 
-    public function __construct()
-    {
-    }
+    protected ?string $apiKey;
+
+    public function __construct() {}
 
     public function setEndpoint(string $endpoint): self
     {
@@ -33,10 +32,10 @@ class HttpClientConnector
             'http_errors' => false,
             'base_uri' => $this->endpoint,
             'headers' => [
-                "Accept" => "application/json",
-                "Content-Type" => "application/json",
-                "Authorization" => "Basic {$this->apiKey}",
-            ]
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'Authorization' => "Basic {$this->apiKey}",
+            ],
         ]);
     }
 }

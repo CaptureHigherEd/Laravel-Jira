@@ -12,6 +12,8 @@ class Issues extends HttpApi
 {
     /**
      * Get all issues
+     *
+     * @param  array<string, mixed>  $params
      */
     public function index(array $params = []): Search
     {
@@ -22,6 +24,8 @@ class Issues extends HttpApi
 
     /**
      * Get an issue
+     *
+     * @param  array<string, mixed>  $params
      */
     public function show(string $issueId, array $params = []): Issue
     {
@@ -32,6 +36,8 @@ class Issues extends HttpApi
 
     /**
      * Create an issue
+     *
+     * @param  array<string, mixed>  $params
      */
     public function create(array $params = []): Issue
     {
@@ -42,6 +48,9 @@ class Issues extends HttpApi
 
     /**
      * Attach a file
+     *
+     * @param  array<int, array<string, mixed>>  $params
+     * @return array<mixed>
      */
     public function attach(string $issueId, array $params = []): array
     {
@@ -52,6 +61,9 @@ class Issues extends HttpApi
 
     /**
      * Add a comment
+     *
+     * @param  array<string, mixed>  $params
+     * @return array<mixed>
      */
     public function comment(string $issueId, array $params = []): array
     {
@@ -62,6 +74,8 @@ class Issues extends HttpApi
 
     /**
      * Update an issue
+     *
+     * @param  array<string, mixed>  $params
      */
     public function update(string $issueId, array $params = []): Issue
     {
@@ -72,6 +86,9 @@ class Issues extends HttpApi
 
     /**
      * Get creation metadata
+     *
+     * @param  array<string, mixed>  $params
+     * @return array<mixed>
      */
     public function getCreateMeta(array $params = []): array
     {
@@ -82,6 +99,8 @@ class Issues extends HttpApi
 
     /**
      * Delete an issue
+     *
+     * @return array<mixed>
      */
     public function delete(string $issueId): array
     {

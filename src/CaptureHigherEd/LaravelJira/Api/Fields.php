@@ -13,6 +13,9 @@ class Fields extends HttpApi
     /**
      * Get all fields
      */
+    /**
+     * @param  array<string, mixed>  $params
+     */
     public function index(array $params = []): ModelsFields
     {
         $response = $this->httpGet('field', $params);
@@ -23,13 +26,14 @@ class Fields extends HttpApi
     /**
      * Get allowed values for a specific field within a project and issue type.
      *
-     * @param  Field  $field           The field to look up options for
-     * @param  string $projectKey      The Jira project key (e.g. "CBE4")
-     * @param  string $issueTypeName   The issue type name (e.g. "Bug")
-     * @return array<string, string>   Map of value => value for the allowed options
+     * @param  Field  $field  The field to look up options for
+     * @param  string  $projectKey  The Jira project key (e.g. "CBE4")
+     * @param  string  $issueTypeName  The issue type name (e.g. "Bug")
+     * @return array<string, string> Map of value => value for the allowed options
      */
     public function getFieldOptions(Field $field, string $projectKey, string $issueTypeName): array
     {
+        /** @var array<string, mixed> $meta */
         $meta = $this->hydrateResponse(
             $this->httpGet('issue/createmeta', ['expand' => 'projects.issuetypes.fields'])
         );
@@ -40,7 +44,10 @@ class Fields extends HttpApi
                     if ($issueType['name'] === $issueTypeName) {
                         foreach ($issueType['fields'] as $fieldKey => $fieldData) {
                             if ($fieldKey === $field->getKey()) {
-                                return collect($fieldData['allowedValues'])->pluck('value', 'value')->toArray();
+                                /** @var array<mixed> $allowedValues */
+                                $allowedValues = $fieldData['allowedValues'];
+
+                                return collect($allowedValues)->pluck('value', 'value')->toArray();
                             }
                         }
                     }

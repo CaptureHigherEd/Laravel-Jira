@@ -5,22 +5,29 @@ namespace CaptureHigherEd\LaravelJira\Models;
 final class User implements ApiResponse
 {
     const NAME = 'displayName';
+
     const KEY = 'accountId';
+
     const EMAIL = 'emailAddress';
+
     const ACTIVE = 'active';
 
     private string $key = '';
+
     private string $email = '';
+
     private bool $active = false;
+
     private string $name = '';
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public static function make(array $data = []): self
     {
-        $model = new self();
+        $model = new self;
 
         $model->setKey($data[self::KEY] ?? '');
         $model->setName($data[self::NAME] ?? '');
@@ -78,12 +85,15 @@ final class User implements ApiResponse
         return $this;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
         return [
-            self::KEY    => $this->key,
-            self::NAME   => $this->name,
-            self::EMAIL  => $this->email,
+            self::KEY => $this->key,
+            self::NAME => $this->name,
+            self::EMAIL => $this->email,
             self::ACTIVE => $this->active,
         ];
     }

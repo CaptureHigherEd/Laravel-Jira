@@ -6,12 +6,14 @@ final class Search implements ApiResponse
 {
     const ISSUES = 'issues';
 
+    /** @var array<int, Issue> */
     private array $issues = [];
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public static function make(array $data = []): self
     {
         $issues = [];
@@ -22,18 +24,24 @@ final class Search implements ApiResponse
             }
         }
 
-        $model = new self();
+        $model = new self;
 
         $model->issues = $issues;
 
         return $model;
     }
 
+    /**
+     * @return array<int, Issue>
+     */
     public function getIssues(): array
     {
         return $this->issues;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
         return [

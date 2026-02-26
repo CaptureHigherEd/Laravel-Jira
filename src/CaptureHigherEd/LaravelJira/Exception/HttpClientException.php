@@ -6,8 +6,9 @@ use Psr\Http\Message\ResponseInterface;
 
 final class HttpClientException extends \RuntimeException
 {
-    private ResponseInterface|null $response;
+    private ?ResponseInterface $response;
 
+    /** @var array<string, mixed> */
     private array $responseBody = [];
 
     private int $responseCode;
@@ -22,7 +23,7 @@ final class HttpClientException extends \RuntimeException
         $response->getBody()->rewind();
         $body = $response->getBody()->__toString();
 
-        if (0 !== strpos($response->getHeaderLine('Content-Type'), 'application/json')) {
+        if (strpos($response->getHeaderLine('Content-Type'), 'application/json') !== 0) {
             $this->responseBody['message'] = $body;
         } elseif ($body) {
             $this->responseBody = json_decode($body, true);
@@ -33,7 +34,7 @@ final class HttpClientException extends \RuntimeException
     {
         $body = $response->getBody()->__toString();
 
-        if (0 !== strpos($response->getHeaderLine('Content-Type'), 'application/json')) {
+        if (strpos($response->getHeaderLine('Content-Type'), 'application/json') !== 0) {
             $validationMessage = $body;
         } else {
             $jsonDecoded = json_decode($body, true);
@@ -85,7 +86,7 @@ final class HttpClientException extends \RuntimeException
     {
         $body = $response->getBody()->__toString();
 
-        if (0 !== strpos($response->getHeaderLine('Content-Type'), 'application/json')) {
+        if (strpos($response->getHeaderLine('Content-Type'), 'application/json') !== 0) {
             $validationMessage = $body;
         } else {
             $jsonDecoded = json_decode($body, true);
@@ -112,7 +113,7 @@ final class HttpClientException extends \RuntimeException
     {
         $body = $response->getBody()->__toString();
 
-        if (0 !== strpos($response->getHeaderLine('Content-Type'), 'application/json')) {
+        if (strpos($response->getHeaderLine('Content-Type'), 'application/json') !== 0) {
             $validationMessage = $body;
         } else {
             $jsonDecoded = json_decode($body, true);
@@ -126,7 +127,7 @@ final class HttpClientException extends \RuntimeException
 
     public static function unknown(ResponseInterface $response): self
     {
-        $message = "Unknown Error";
+        $message = 'Unknown Error';
 
         return new self($message, $response->getStatusCode(), $response);
     }
@@ -136,6 +137,9 @@ final class HttpClientException extends \RuntimeException
         return $this->response;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getResponseBody(): array
     {
         return $this->responseBody;

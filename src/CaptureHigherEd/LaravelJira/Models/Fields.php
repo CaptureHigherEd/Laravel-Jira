@@ -6,12 +6,14 @@ use CaptureHigherEd\LaravelJira\Exception\CustomFieldDoesNotExistException;
 
 final class Fields implements ApiResponse
 {
+    /** @var array<int, Field> */
     private array $fields = [];
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public static function make(array $data = []): self
     {
         $fields = [];
@@ -20,18 +22,24 @@ final class Fields implements ApiResponse
             $fields[] = Field::make($item);
         }
 
-        $model = new self();
+        $model = new self;
 
         $model->fields = $fields;
 
         return $model;
     }
 
+    /**
+     * @return array<int, Field>
+     */
     public function getFields(): array
     {
         return $this->fields;
     }
 
+    /**
+     * @return array<int, Field>
+     */
     public function getCustomFields(): array
     {
         return array_filter($this->fields, static function (Field $field): bool {
@@ -45,7 +53,7 @@ final class Fields implements ApiResponse
             return $field->getName() === $name;
         }));
 
-        if (!$field) {
+        if (! $field) {
             throw new CustomFieldDoesNotExistException($name);
         }
 
@@ -58,13 +66,16 @@ final class Fields implements ApiResponse
             return $field->getName() === $name;
         }));
 
-        if (!$field) {
+        if (! $field) {
             throw new CustomFieldDoesNotExistException($name);
         }
 
         return $field;
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     public function toArray(): array
     {
         return array_map(fn (Field $field) => $field->toArray(), $this->fields);

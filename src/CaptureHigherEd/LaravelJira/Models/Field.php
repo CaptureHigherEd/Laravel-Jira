@@ -5,32 +5,51 @@ namespace CaptureHigherEd\LaravelJira\Models;
 final class Field implements ApiResponse
 {
     const CLAUSENAMES = 'clauseNames';
+
     const SEARCHABLE = 'searchable';
+
     const NAVIGABLE = 'navigable';
+
     const ORDERABLE = 'orderable';
+
     const SCHEMA = 'schema';
+
     const CUSTOM = 'custom';
+
     const NAME = 'name';
+
     const KEY = 'key';
+
     const ID = 'id';
 
     private string $key = '';
+
     private string $id = '';
+
     private string $name = '';
+
     private bool $custom = false;
+
     private bool $orderable = false;
+
     private bool $navigable = false;
+
     private bool $searchable = false;
+
+    /** @var array<string> */
     private array $clauseNames = [];
+
+    /** @var array<string, mixed> */
     private array $schema = [];
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public static function make(array $data = []): self
     {
-        $model = new self();
+        $model = new self;
 
         $model->setId($data[self::ID] ?? '');
         $model->setKey($data[self::KEY] ?? '');
@@ -80,11 +99,17 @@ final class Field implements ApiResponse
         return $this->orderable;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getSchema(): array
     {
         return $this->schema;
     }
 
+    /**
+     * @return array<string>
+     */
     public function getClauseNames(): array
     {
         return $this->clauseNames;
@@ -139,6 +164,9 @@ final class Field implements ApiResponse
         return $this;
     }
 
+    /**
+     * @param  array<string, mixed>  $value
+     */
     public function setSchema(array $value): self
     {
         $this->schema = $value;
@@ -146,6 +174,9 @@ final class Field implements ApiResponse
         return $this;
     }
 
+    /**
+     * @param  array<string>  $value
+     */
     public function setClauseNames(array $value): self
     {
         $this->clauseNames = $value;
@@ -153,18 +184,21 @@ final class Field implements ApiResponse
         return $this;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
         return [
-            self::ID          => $this->id,
-            self::KEY         => $this->key,
-            self::NAME        => $this->name,
-            self::CUSTOM      => $this->custom,
-            self::ORDERABLE   => $this->orderable,
-            self::NAVIGABLE   => $this->navigable,
-            self::SEARCHABLE  => $this->searchable,
+            self::ID => $this->id,
+            self::KEY => $this->key,
+            self::NAME => $this->name,
+            self::CUSTOM => $this->custom,
+            self::ORDERABLE => $this->orderable,
+            self::NAVIGABLE => $this->navigable,
+            self::SEARCHABLE => $this->searchable,
             self::CLAUSENAMES => $this->clauseNames,
-            self::SCHEMA      => $this->schema,
+            self::SCHEMA => $this->schema,
         ];
     }
 }
