@@ -19,17 +19,17 @@ class CommentTest extends TestCase
 
         $comment = Comment::make($data);
 
-        $this->assertSame($data, $comment->toArray());
+        $this->assertSame($data, $comment->toArray(), 'Comment::toArray() should return the same data that was passed to make()');
     }
 
     public function test_make_with_empty_data(): void
     {
         $comment = Comment::make();
 
-        $this->assertSame('', $comment->getId());
-        $this->assertSame([], $comment->getBody());
-        $this->assertSame('', $comment->getCreated());
-        $this->assertSame('', $comment->getUpdated());
-        $this->assertSame('', $comment->getSelf());
+        $this->assertSame('', $comment->getId(), 'Comment ID should default to an empty string when not provided');
+        $this->assertSame([], $comment->getBody(), 'Comment body should default to an empty array when not provided');
+        $this->assertSame('', $comment->getCreated(), 'Comment created timestamp should default to an empty string when not provided');
+        $this->assertSame('', $comment->getUpdated(), 'Comment updated timestamp should default to an empty string when not provided');
+        $this->assertSame('', $comment->getSelf(), 'Comment self URL should default to an empty string when not provided');
     }
 }

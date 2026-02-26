@@ -24,8 +24,8 @@ class IssuesTest extends TestCase
 
         $result = $api->index(['jql' => 'project=TEST']);
 
-        $this->assertInstanceOf(Search::class, $result);
-        $this->assertCount(1, $result->getIssues());
+        $this->assertInstanceOf(Search::class, $result, 'Issues::index() should return a Search instance');
+        $this->assertCount(1, $result->getIssues(), 'Issues::index() search result should contain exactly 1 issue from the response');
     }
 
     public function test_show(): void
@@ -36,8 +36,8 @@ class IssuesTest extends TestCase
 
         $result = $api->show('KEY-10');
 
-        $this->assertInstanceOf(Issue::class, $result);
-        $this->assertSame('KEY-10', $result->getKey());
+        $this->assertInstanceOf(Issue::class, $result, 'Issues::show() should return an Issue instance');
+        $this->assertSame('KEY-10', $result->getKey(), 'Issues::show() should return the issue with the correct key');
     }
 
     public function test_create(): void
@@ -48,8 +48,8 @@ class IssuesTest extends TestCase
 
         $result = $api->create(['fields' => ['summary' => 'New']]);
 
-        $this->assertInstanceOf(Issue::class, $result);
-        $this->assertSame('KEY-11', $result->getKey());
+        $this->assertInstanceOf(Issue::class, $result, 'Issues::create() should return an Issue instance');
+        $this->assertSame('KEY-11', $result->getKey(), 'Issues::create() should return the newly created issue with the correct key');
     }
 
     public function test_attach(): void
@@ -66,8 +66,8 @@ class IssuesTest extends TestCase
 
         $result = $api->attach('KEY-1', $multipart);
 
-        $this->assertInstanceOf(Attachments::class, $result);
-        $this->assertCount(1, $result->getAttachments());
+        $this->assertInstanceOf(Attachments::class, $result, 'Issues::attach() should return an Attachments instance');
+        $this->assertCount(1, $result->getAttachments(), 'Issues::attach() should return the correct number of attachments from the response');
     }
 
     public function test_comment(): void
@@ -84,8 +84,8 @@ class IssuesTest extends TestCase
 
         $result = $api->comment('KEY-1', ['body' => []]);
 
-        $this->assertInstanceOf(Comment::class, $result);
-        $this->assertSame('200', $result->getId());
+        $this->assertInstanceOf(Comment::class, $result, 'Issues::comment() should return a Comment instance');
+        $this->assertSame('200', $result->getId(), 'Issues::comment() should return the comment with the correct ID from the response');
     }
 
     public function test_update(): void
@@ -96,7 +96,7 @@ class IssuesTest extends TestCase
 
         $result = $api->update('KEY-10', ['fields' => ['summary' => 'Updated']]);
 
-        $this->assertInstanceOf(Issue::class, $result);
+        $this->assertInstanceOf(Issue::class, $result, 'Issues::update() should return an Issue instance');
     }
 
     public function test_get_create_meta(): void
@@ -108,7 +108,7 @@ class IssuesTest extends TestCase
 
         $result = $api->getCreateMeta();
 
-        $this->assertSame($meta, $result);
+        $this->assertSame($meta, $result, 'Issues::getCreateMeta() should return the raw create metadata array from the API response');
     }
 
     public function test_delete(): void
@@ -119,6 +119,6 @@ class IssuesTest extends TestCase
 
         $result = $api->delete('KEY-1');
 
-        $this->assertSame([], $result);
+        $this->assertSame([], $result, 'Issues::delete() should return an empty array for a successful 204 No Content response');
     }
 }

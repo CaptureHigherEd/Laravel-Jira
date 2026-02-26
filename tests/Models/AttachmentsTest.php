@@ -31,16 +31,16 @@ class AttachmentsTest extends TestCase
 
         $attachments = Attachments::make($data);
 
-        $this->assertCount(2, $attachments->getAttachments());
-        $this->assertContainsOnlyInstancesOf(Attachment::class, $attachments->getAttachments());
-        $this->assertSame($data, $attachments->toArray());
+        $this->assertCount(2, $attachments->getAttachments(), 'Attachments collection should contain exactly 2 items matching the input array');
+        $this->assertContainsOnlyInstancesOf(Attachment::class, $attachments->getAttachments(), 'All items in the Attachments collection should be hydrated as Attachment instances');
+        $this->assertSame($data, $attachments->toArray(), 'Attachments::toArray() should return the same data that was passed to make()');
     }
 
     public function test_make_with_empty_array(): void
     {
         $attachments = Attachments::make([]);
 
-        $this->assertSame([], $attachments->getAttachments());
-        $this->assertSame([], $attachments->toArray());
+        $this->assertSame([], $attachments->getAttachments(), 'Attachments collection should be an empty array when constructed with no data');
+        $this->assertSame([], $attachments->toArray(), 'Attachments::toArray() should return an empty array when no attachments are present');
     }
 }

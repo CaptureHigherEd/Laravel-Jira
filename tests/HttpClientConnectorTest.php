@@ -21,7 +21,7 @@ class HttpClientConnectorTest extends TestCase
     {
         $client = $this->connector->createClient();
 
-        $this->assertInstanceOf(Client::class, $client);
+        $this->assertInstanceOf(Client::class, $client, 'createClient() should return a GuzzleHttp\\Client instance');
     }
 
     public function test_create_client_sets_base_uri(): void
@@ -30,7 +30,8 @@ class HttpClientConnectorTest extends TestCase
 
         $this->assertSame(
             'https://test.atlassian.net/rest/api/3/',
-            (string) $client->getConfig('base_uri')
+            (string) $client->getConfig('base_uri'),
+            'Guzzle client base_uri should match the configured endpoint'
         );
     }
 
@@ -39,13 +40,13 @@ class HttpClientConnectorTest extends TestCase
         $client = $this->connector->createClient();
         $headers = $client->getConfig('headers');
 
-        $this->assertSame('Basic dGVzdEBleGFtcGxlLmNvbTpmYWtlLXRva2Vu', $headers['Authorization']);
+        $this->assertSame('Basic dGVzdEBleGFtcGxlLmNvbTpmYWtlLXRva2Vu', $headers['Authorization'], 'Authorization header should be a Basic token using the configured API key');
     }
 
     public function test_create_client_disables_http_errors(): void
     {
         $client = $this->connector->createClient();
 
-        $this->assertFalse($client->getConfig('http_errors'));
+        $this->assertFalse($client->getConfig('http_errors'), 'Guzzle http_errors option should be disabled so errors are handled manually');
     }
 }

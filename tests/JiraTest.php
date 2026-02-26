@@ -26,7 +26,7 @@ class JiraTest extends TestCase
     {
         $jira = $this->app->make(Jira::class);
 
-        $this->assertInstanceOf(Jira::class, $jira);
+        $this->assertInstanceOf(Jira::class, $jira, 'Jira service should resolve to a Jira instance when credentials are present');
     }
 
     public function test_jira_service_returns_null_when_token_missing(): void
@@ -35,27 +35,27 @@ class JiraTest extends TestCase
 
         $jira = $this->app->make(Jira::class);
 
-        $this->assertNull($jira);
+        $this->assertNull($jira, 'Jira service should return null when the API token is not configured');
     }
 
     public function test_jira_exposes_issues_api(): void
     {
         $jira = $this->app->make(Jira::class);
 
-        $this->assertInstanceOf(Issues::class, $jira->issues());
+        $this->assertInstanceOf(Issues::class, $jira->issues(), 'Jira::issues() should return an Issues API instance');
     }
 
     public function test_jira_exposes_fields_api(): void
     {
         $jira = $this->app->make(Jira::class);
 
-        $this->assertInstanceOf(Fields::class, $jira->fields());
+        $this->assertInstanceOf(Fields::class, $jira->fields(), 'Jira::fields() should return a Fields API instance');
     }
 
     public function test_jira_exposes_users_api(): void
     {
         $jira = $this->app->make(Jira::class);
 
-        $this->assertInstanceOf(Users::class, $jira->users());
+        $this->assertInstanceOf(Users::class, $jira->users(), 'Jira::users() should return a Users API instance');
     }
 }

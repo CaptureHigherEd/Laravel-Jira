@@ -65,8 +65,8 @@ class HttpApiTest extends TestCase
 
         $result = $api->callHydrateResponse($response, Search::class);
 
-        $this->assertInstanceOf(Search::class, $result);
-        $this->assertCount(1, $result->getIssues());
+        $this->assertInstanceOf(Search::class, $result, 'hydrateResponse() should return a Search instance when given a 200 response and the Search class');
+        $this->assertCount(1, $result->getIssues(), 'Hydrated Search result should contain exactly 1 issue from the response body');
     }
 
     public function test_hydrate_201_with_class(): void
@@ -76,7 +76,7 @@ class HttpApiTest extends TestCase
 
         $result = $api->callHydrateResponse($response, Search::class);
 
-        $this->assertInstanceOf(Search::class, $result);
+        $this->assertInstanceOf(Search::class, $result, 'hydrateResponse() should return a Search instance when given a 201 Created response');
     }
 
     public function test_hydrate_204_with_class(): void
@@ -86,8 +86,8 @@ class HttpApiTest extends TestCase
 
         $result = $api->callHydrateResponse($response, Search::class);
 
-        $this->assertInstanceOf(Search::class, $result);
-        $this->assertSame([], $result->getIssues());
+        $this->assertInstanceOf(Search::class, $result, 'hydrateResponse() should return an empty hydrated instance when given a 204 No Content response with a class');
+        $this->assertSame([], $result->getIssues(), 'Hydrated Search from a 204 response should have an empty issues array');
     }
 
     public function test_hydrate_204_without_class(): void
@@ -97,7 +97,7 @@ class HttpApiTest extends TestCase
 
         $result = $api->callHydrateResponse($response);
 
-        $this->assertSame([], $result);
+        $this->assertSame([], $result, 'hydrateResponse() should return an empty array when given a 204 No Content response without a class');
     }
 
     public function test_hydrate_empty_body_with_class(): void
@@ -107,7 +107,7 @@ class HttpApiTest extends TestCase
 
         $result = $api->callHydrateResponse($response, Search::class);
 
-        $this->assertInstanceOf(Search::class, $result);
+        $this->assertInstanceOf(Search::class, $result, 'hydrateResponse() should return an empty hydrated instance when the response body is empty and a class is provided');
     }
 
     public function test_hydrate_empty_body_without_class(): void
@@ -117,7 +117,7 @@ class HttpApiTest extends TestCase
 
         $result = $api->callHydrateResponse($response);
 
-        $this->assertSame([], $result);
+        $this->assertSame([], $result, 'hydrateResponse() should return an empty array when the response body is empty and no class is provided');
     }
 
     public function test_hydrate_200_without_class(): void
@@ -128,7 +128,7 @@ class HttpApiTest extends TestCase
 
         $result = $api->callHydrateResponse($response);
 
-        $this->assertSame($data, $result);
+        $this->assertSame($data, $result, 'hydrateResponse() should return the raw decoded array when no class is provided');
     }
 
     public function test_hydrate_invalid_json_returns_empty_array(): void
@@ -138,7 +138,7 @@ class HttpApiTest extends TestCase
 
         $result = $api->callHydrateResponse($response);
 
-        $this->assertSame([], $result);
+        $this->assertSame([], $result, 'hydrateResponse() should return an empty array when the response body contains invalid JSON');
     }
 
     // ── handleErrors ─────────────────────────────────────────────────────

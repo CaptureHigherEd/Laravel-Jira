@@ -59,8 +59,8 @@ class FieldsTest extends TestCase
 
         $result = $api->index();
 
-        $this->assertInstanceOf(ModelsFields::class, $result);
-        $this->assertCount(1, $result->getFields());
+        $this->assertInstanceOf(ModelsFields::class, $result, 'Fields::index() should return a Fields model instance');
+        $this->assertCount(1, $result->getFields(), 'Fields::index() should return exactly 1 field from the response');
     }
 
     public function test_get_field_options_happy_path(): void
@@ -73,7 +73,7 @@ class FieldsTest extends TestCase
         $field = Field::make(['id' => 'customfield_10001', 'key' => 'customfield_10001', 'name' => 'Priority', 'custom' => true, 'orderable' => false, 'navigable' => false, 'searchable' => false, 'clauseNames' => [], 'schema' => []]);
         $result = $api->getFieldOptions($field, 'CBE4', 'Bug');
 
-        $this->assertSame(['Option A' => 'Option A', 'Option B' => 'Option B', 'Option C' => 'Option C'], $result);
+        $this->assertSame(['Option A' => 'Option A', 'Option B' => 'Option B', 'Option C' => 'Option C'], $result, 'getFieldOptions() should return allowed values keyed and valued by their value string');
     }
 
     public function test_get_field_options_project_not_found(): void
@@ -86,7 +86,7 @@ class FieldsTest extends TestCase
         $field = Field::make(['id' => 'customfield_10001', 'key' => 'customfield_10001', 'name' => 'Priority', 'custom' => true, 'orderable' => false, 'navigable' => false, 'searchable' => false, 'clauseNames' => [], 'schema' => []]);
         $result = $api->getFieldOptions($field, 'NONEXISTENT', 'Bug');
 
-        $this->assertSame([], $result);
+        $this->assertSame([], $result, 'getFieldOptions() should return an empty array when the specified project key does not exist in the metadata');
     }
 
     public function test_get_field_options_issue_type_not_found(): void
@@ -99,7 +99,7 @@ class FieldsTest extends TestCase
         $field = Field::make(['id' => 'customfield_10001', 'key' => 'customfield_10001', 'name' => 'Priority', 'custom' => true, 'orderable' => false, 'navigable' => false, 'searchable' => false, 'clauseNames' => [], 'schema' => []]);
         $result = $api->getFieldOptions($field, 'CBE4', 'Story');
 
-        $this->assertSame([], $result);
+        $this->assertSame([], $result, 'getFieldOptions() should return an empty array when the specified issue type does not exist in the project');
     }
 
     public function test_get_field_options_field_not_found(): void
@@ -112,6 +112,6 @@ class FieldsTest extends TestCase
         $field = Field::make(['id' => 'customfield_99999', 'key' => 'customfield_99999', 'name' => 'Nonexistent', 'custom' => true, 'orderable' => false, 'navigable' => false, 'searchable' => false, 'clauseNames' => [], 'schema' => []]);
         $result = $api->getFieldOptions($field, 'CBE4', 'Bug');
 
-        $this->assertSame([], $result);
+        $this->assertSame([], $result, 'getFieldOptions() should return an empty array when the field ID does not exist in the issue type fields');
     }
 }

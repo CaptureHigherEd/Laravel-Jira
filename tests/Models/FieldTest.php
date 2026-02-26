@@ -23,22 +23,22 @@ class FieldTest extends TestCase
 
         $field = Field::make($data);
 
-        $this->assertSame($data, $field->toArray());
+        $this->assertSame($data, $field->toArray(), 'Field::toArray() should return the same data that was passed to make()');
     }
 
     public function test_make_with_empty_data(): void
     {
         $field = Field::make();
 
-        $this->assertSame('', $field->getId());
-        $this->assertSame('', $field->getKey());
-        $this->assertSame('', $field->getName());
-        $this->assertFalse($field->getCustom());
-        $this->assertFalse($field->getOrderable());
-        $this->assertFalse($field->getNavigable());
-        $this->assertFalse($field->getSearchable());
-        $this->assertSame([], $field->getClauseNames());
-        $this->assertSame([], $field->getSchema());
+        $this->assertSame('', $field->getId(), 'Field ID should default to an empty string when not provided');
+        $this->assertSame('', $field->getKey(), 'Field key should default to an empty string when not provided');
+        $this->assertSame('', $field->getName(), 'Field name should default to an empty string when not provided');
+        $this->assertFalse($field->getCustom(), 'Field custom flag should default to false when not provided');
+        $this->assertFalse($field->getOrderable(), 'Field orderable flag should default to false when not provided');
+        $this->assertFalse($field->getNavigable(), 'Field navigable flag should default to false when not provided');
+        $this->assertFalse($field->getSearchable(), 'Field searchable flag should default to false when not provided');
+        $this->assertSame([], $field->getClauseNames(), 'Field clauseNames should default to an empty array when not provided');
+        $this->assertSame([], $field->getSchema(), 'Field schema should default to an empty array when not provided');
     }
 
     public function test_make_with_partial_data(): void
@@ -49,9 +49,9 @@ class FieldTest extends TestCase
             'custom' => false,
         ]);
 
-        $this->assertSame('summary', $field->getId());
-        $this->assertSame('Summary', $field->getName());
-        $this->assertFalse($field->getCustom());
-        $this->assertSame('', $field->getKey());
+        $this->assertSame('summary', $field->getId(), 'Field ID should match the provided id value');
+        $this->assertSame('Summary', $field->getName(), 'Field name should match the provided name value');
+        $this->assertFalse($field->getCustom(), 'Field custom flag should be false when explicitly set to false');
+        $this->assertSame('', $field->getKey(), 'Field key should default to an empty string when not included in partial data');
     }
 }

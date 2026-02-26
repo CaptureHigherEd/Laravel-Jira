@@ -54,17 +54,17 @@ class FieldsTest extends TestCase
         $data = $this->fieldData();
         $fields = Fields::make($data);
 
-        $this->assertCount(3, $fields->getFields());
-        $this->assertContainsOnlyInstancesOf(Field::class, $fields->getFields());
-        $this->assertSame($data, $fields->toArray());
+        $this->assertCount(3, $fields->getFields(), 'Fields collection should contain exactly 3 items matching the input array');
+        $this->assertContainsOnlyInstancesOf(Field::class, $fields->getFields(), 'All items in the Fields collection should be hydrated as Field instances');
+        $this->assertSame($data, $fields->toArray(), 'Fields::toArray() should return the same data that was passed to make()');
     }
 
     public function test_make_with_empty_array(): void
     {
         $fields = Fields::make([]);
 
-        $this->assertSame([], $fields->getFields());
-        $this->assertSame([], $fields->toArray());
+        $this->assertSame([], $fields->getFields(), 'Fields collection should be an empty array when constructed with no data');
+        $this->assertSame([], $fields->toArray(), 'Fields::toArray() should return an empty array when no fields are present');
     }
 
     public function test_get_custom_fields_filters_by_key_prefix(): void
@@ -73,9 +73,9 @@ class FieldsTest extends TestCase
 
         $custom = $fields->getCustomFields();
 
-        $this->assertCount(2, $custom);
+        $this->assertCount(2, $custom, 'getCustomFields() should return only the 2 fields with a customfield_ key prefix');
         foreach ($custom as $field) {
-            $this->assertStringStartsWith('customfield_', $field->getKey());
+            $this->assertStringStartsWith('customfield_', $field->getKey(), 'Each custom field returned by getCustomFields() should have a key starting with "customfield_"');
         }
     }
 
@@ -85,7 +85,7 @@ class FieldsTest extends TestCase
 
         $id = $fields->getCustomFieldId('Story Points');
 
-        $this->assertSame('customfield_10001', $id);
+        $this->assertSame('customfield_10001', $id, 'getCustomFieldId() should return the correct field ID for "Story Points"');
     }
 
     public function test_get_custom_field_id_throws_when_not_found(): void
@@ -103,8 +103,8 @@ class FieldsTest extends TestCase
 
         $field = $fields->getCustomField('Epic Link');
 
-        $this->assertInstanceOf(Field::class, $field);
-        $this->assertSame('customfield_10002', $field->getId());
+        $this->assertInstanceOf(Field::class, $field, 'getCustomField() should return a Field instance for a known custom field name');
+        $this->assertSame('customfield_10002', $field->getId(), 'getCustomField() should return the field with the correct ID for "Epic Link"');
     }
 
     public function test_get_custom_field_throws_when_not_found(): void
