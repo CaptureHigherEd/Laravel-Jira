@@ -11,21 +11,21 @@ final class User implements ApiResponse
 
     private string $key = '';
     private string $email = '';
-    private string $active = '';
+    private bool $active = false;
     private string $name = '';
 
     private function __construct()
     {
     }
 
-    public static function make(?array $data = []): self
+    public static function make(array $data = []): self
     {
         $model = new self();
 
         $model->setKey($data[self::KEY] ?? '');
         $model->setName($data[self::NAME] ?? '');
         $model->setEmail($data[self::EMAIL] ?? '');
-        $model->setActive($data[self::ACTIVE] ?? '');
+        $model->setActive($data[self::ACTIVE] ?? false);
 
         return $model;
     }
@@ -35,7 +35,7 @@ final class User implements ApiResponse
         return $this->key;
     }
 
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -45,33 +45,33 @@ final class User implements ApiResponse
         return $this->email;
     }
 
-    public function getActive(): string
+    public function getActive(): bool
     {
         return $this->active;
     }
 
-    public function setKey($value): self
+    public function setKey(string $value): self
     {
         $this->key = $value;
 
         return $this;
     }
 
-    public function setName($value): self
+    public function setName(string $value): self
     {
         $this->name = $value;
 
         return $this;
     }
 
-    public function setEmail($value): self
+    public function setEmail(string $value): self
     {
         $this->email = $value;
 
         return $this;
     }
 
-    public function setActive($value): self
+    public function setActive(bool $value): self
     {
         $this->active = $value;
 
@@ -80,6 +80,11 @@ final class User implements ApiResponse
 
     public function toArray(): array
     {
-        return [];
+        return [
+            self::KEY    => $this->key,
+            self::NAME   => $this->name,
+            self::EMAIL  => $this->email,
+            self::ACTIVE => $this->active,
+        ];
     }
 }

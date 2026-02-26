@@ -11,7 +11,7 @@ final class Users implements ApiResponse
     {
     }
 
-    public static function make(?array $data = []): self
+    public static function make(array $data = []): self
     {
         $users = [];
 
@@ -26,12 +26,12 @@ final class Users implements ApiResponse
         return $model;
     }
 
-    public function getUsers()
+    public function getUsers(): array
     {
         return $this->users;
     }
 
-    public function getActiveUsers()
+    public function getActiveUsers(): array
     {
         return array_filter($this->users, static function (User $user): bool {
             return $user->getActive();
@@ -40,6 +40,6 @@ final class Users implements ApiResponse
 
     public function toArray(): array
     {
-        return [];
+        return array_map(fn (User $user) => $user->toArray(), $this->users);
     }
 }

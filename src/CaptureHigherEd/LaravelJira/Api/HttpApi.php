@@ -2,19 +2,23 @@
 
 namespace CaptureHigherEd\LaravelJira\Api;
 
-use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
 use CaptureHigherEd\LaravelJira\Exception\HttpClientException;
 
 abstract class HttpApi
 {
-    protected Client $httpClient;
+    protected ClientInterface $httpClient;
 
-    public function __construct(Client $httpClient)
+    public function __construct(ClientInterface $httpClient)
     {
         $this->httpClient = $httpClient;
     }
 
+    /**
+     * @param  string               $path        Relative API path
+     * @param  array<string, mixed> $parameters  Query string parameters
+     */
     protected function httpGet(string $path, array $parameters = []): ResponseInterface
     {
         $response = $this->httpClient->get($path, ['query' => $parameters]);
@@ -22,14 +26,22 @@ abstract class HttpApi
         return $response;
     }
 
+    /**
+     * @param  string               $path        Relative API path
+     * @param  array<string, mixed> $parameters  JSON request body
+     */
     protected function httpPost(string $path, array $parameters = []): ResponseInterface
     {
-        $response = $this->httpClient->post($path, ['body' => json_encode($parameters)]);
+        $response = $this->httpClient->post($path, ['json' => $parameters]);
 
         return $response;
     }
 
-    protected function httpPostWithAttachments(string $path, array $multipart = [], array $headers = []): ResponseInterface
+    /**
+     * @param  string                        $path       Relative API path
+     * @param  array<int, array<string,mixed>> $multipart Guzzle multipart form data
+     */
+    protected function httpPostWithAttachments(string $path, array $multipart = []): ResponseInterface
     {
         $response = $this->httpClient->post($path, ['multipart' => $multipart, 'headers' => [
             'Accept' => 'application/json',
@@ -39,13 +51,20 @@ abstract class HttpApi
         return $response;
     }
 
+    /**
+     * @param  string               $path        Relative API path
+     * @param  array<string, mixed> $parameters  JSON request body
+     */
     protected function httpPut(string $path, array $parameters = []): ResponseInterface
     {
-        $response = $this->httpClient->put($path, ['body' => json_encode($parameters)]);
+        $response = $this->httpClient->put($path, ['json' => $parameters]);
 
         return $response;
     }
 
+    /**
+     * @param  string $path  Relative API path
+     */
     protected function httpDelete(string $path): ResponseInterface
     {
         $response = $this->httpClient->delete($path);
@@ -72,8 +91,14 @@ abstract class HttpApi
                 throw HttpClientException::conflict($response);
             case 413:
                 throw HttpClientException::payloadTooLarge($response);
+            case 422:
+                throw HttpClientException::unprocessableEntity($response);
             case 429:
                 throw HttpClientException::tooManyRequests($response);
+            case 500:
+            case 502:
+            case 503:
+                throw HttpClientException::serverError($response);
             default:
                 throw HttpClientException::unknown($response);
         }
@@ -81,11 +106,23 @@ abstract class HttpApi
 
     protected function hydrateResponse(ResponseInterface $response, ?string $class = null): mixed
     {
-        $data = json_decode($response->getBody(), true);
+        $statusCode = $response->getStatusCode();
 
-        if (!in_array($response->getStatusCode(), [200, 201, 202, 204], true)) {
+        if (!in_array($statusCode, [200, 201, 202, 204], true)) {
             $this->handleErrors($response);
         }
+
+        if ($statusCode === 204) {
+            return $class ? $class::make([]) : [];
+        }
+
+        $body = (string) $response->getBody();
+
+        if ($body === '') {
+            return $class ? $class::make([]) : [];
+        }
+
+        $data = json_decode($body, true);
 
         if (!$class) {
             return $data;

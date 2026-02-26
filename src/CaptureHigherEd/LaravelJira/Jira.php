@@ -21,7 +21,7 @@ class Jira
      * @param  string $endpoint - full path to the jira API
      * @return self
      */
-    public static function create(string $apiKey, string $endpoint = null): self
+    public static function create(string $apiKey, ?string $endpoint = null): self
     {
         $endpoint ??= config('jira.domain') . '/rest/api/3/';
         $httpClient = (new HttpClientConnector())

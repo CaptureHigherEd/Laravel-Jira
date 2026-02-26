@@ -13,7 +13,7 @@ class Issues extends HttpApi
     /**
      * Get all issues
      */
-    public function index(array $params = [])
+    public function index(array $params = []): Search
     {
         $response = $this->httpGet('search', $params);
 
@@ -43,21 +43,21 @@ class Issues extends HttpApi
     /**
      * Attach a file
      */
-    public function attach(string $issueId, array $params = []): Issue
+    public function attach(string $issueId, array $params = []): array
     {
         $response = $this->httpPostWithAttachments(sprintf('issue/%s/attachments', $issueId), $params);
 
-        return $this->hydrateResponse($response, Issue::class);
+        return $this->hydrateResponse($response);
     }
 
     /**
      * Add a comment
      */
-    public function comment(string $issueId, array $params = []): Issue
+    public function comment(string $issueId, array $params = []): array
     {
         $response = $this->httpPost(sprintf('issue/%s/comment', $issueId), $params);
 
-        return $this->hydrateResponse($response, Issue::class);
+        return $this->hydrateResponse($response);
     }
 
     /**
@@ -73,7 +73,7 @@ class Issues extends HttpApi
     /**
      * Get creation metadata
      */
-    public function getCreateMeta(array $params = [])
+    public function getCreateMeta(array $params = []): array
     {
         $response = $this->httpGet('issue/createmeta', $params);
 
@@ -83,7 +83,7 @@ class Issues extends HttpApi
     /**
      * Delete an issue
      */
-    public function delete(string $issueId)
+    public function delete(string $issueId): array
     {
         $response = $this->httpDelete(sprintf('issue/%s', $issueId));
 

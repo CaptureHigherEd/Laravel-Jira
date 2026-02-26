@@ -2,8 +2,6 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-use CaptureHigherEd\LaravelJira\Jira;
-
 final class Field implements ApiResponse
 {
     const CLAUSENAMES = 'clauseNames';
@@ -30,7 +28,7 @@ final class Field implements ApiResponse
     {
     }
 
-    public static function make(?array $data = []): self
+    public static function make(array $data = []): self
     {
         $model = new self();
 
@@ -57,78 +55,56 @@ final class Field implements ApiResponse
         return $this->key;
     }
 
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
 
-    public function getCustom()
+    public function getCustom(): bool
     {
         return $this->custom;
     }
 
-    public function getSearchable()
+    public function getSearchable(): bool
     {
         return $this->searchable;
     }
 
-    public function getNavigable()
+    public function getNavigable(): bool
     {
         return $this->navigable;
     }
 
-    public function getOrderable()
+    public function getOrderable(): bool
     {
         return $this->orderable;
     }
 
-    public function getSchema()
+    public function getSchema(): array
     {
         return $this->schema;
     }
 
-    public function getClauseNames()
+    public function getClauseNames(): array
     {
         return $this->clauseNames;
     }
 
-    public function getOptions(string $project_key, string $issue_type_name)
-    {
-        $jira = app(Jira::class);
-        $meta = $jira->issues()->getCreateMeta(['expand' => 'projects.issuetypes.fields']);
-
-        foreach ($meta['projects'] as $project) {
-            if ($project['key'] == $project_key) {
-                foreach ($project['issuetypes'] as $issue_type) {
-                    if ($issue_type['name'] == $issue_type_name) {
-                        foreach ($issue_type['fields'] as $field_key => $field) {
-                            if ($field_key == $this->getKey()) {
-                                return collect($field['allowedValues'])->pluck('value', 'value')->toArray();
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return [];
-    }
-
-    public function setId($value): self
+    public function setId(string $value): self
     {
         $this->id = $value;
 
         return $this;
     }
 
-    public function setKey($value): self
+    public function setKey(string $value): self
     {
         $this->key = $value;
 
         return $this;
     }
 
-    public function setName($value): self
+    public function setName(string $value): self
     {
         $this->name = $value;
 
@@ -179,6 +155,16 @@ final class Field implements ApiResponse
 
     public function toArray(): array
     {
-        return [];
+        return [
+            self::ID          => $this->id,
+            self::KEY         => $this->key,
+            self::NAME        => $this->name,
+            self::CUSTOM      => $this->custom,
+            self::ORDERABLE   => $this->orderable,
+            self::NAVIGABLE   => $this->navigable,
+            self::SEARCHABLE  => $this->searchable,
+            self::CLAUSENAMES => $this->clauseNames,
+            self::SCHEMA      => $this->schema,
+        ];
     }
 }

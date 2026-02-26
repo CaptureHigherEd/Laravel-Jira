@@ -2,6 +2,7 @@
 
 namespace CaptureHigherEd\LaravelJira\Api;
 
+use CaptureHigherEd\LaravelJira\Models\Field;
 use CaptureHigherEd\LaravelJira\Models\Fields as ModelsFields;
 
 /**
@@ -17,5 +18,36 @@ class Fields extends HttpApi
         $response = $this->httpGet('field', $params);
 
         return $this->hydrateResponse($response, ModelsFields::class);
+    }
+
+    /**
+     * Get allowed values for a specific field within a project and issue type.
+     *
+     * @param  Field  $field           The field to look up options for
+     * @param  string $projectKey      The Jira project key (e.g. "CBE4")
+     * @param  string $issueTypeName   The issue type name (e.g. "Bug")
+     * @return array<string, string>   Map of value => value for the allowed options
+     */
+    public function getFieldOptions(Field $field, string $projectKey, string $issueTypeName): array
+    {
+        $meta = $this->hydrateResponse(
+            $this->httpGet('issue/createmeta', ['expand' => 'projects.issuetypes.fields'])
+        );
+
+        foreach ($meta['projects'] as $project) {
+            if ($project['key'] === $projectKey) {
+                foreach ($project['issuetypes'] as $issueType) {
+                    if ($issueType['name'] === $issueTypeName) {
+                        foreach ($issueType['fields'] as $fieldKey => $fieldData) {
+                            if ($fieldKey === $field->getKey()) {
+                                return collect($fieldData['allowedValues'])->pluck('value', 'value')->toArray();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return [];
     }
 }

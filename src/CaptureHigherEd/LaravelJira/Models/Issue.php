@@ -22,13 +22,13 @@ final class Issue implements ApiResponse
     {
     }
 
-    public static function make(?array $data = []): self
+    public static function make(array $data = []): self
     {
         $model = new self();
 
         $model->setId($data[self::ID] ?? '');
         $model->setKey($data[self::KEY] ?? '');
-        $model->setFields(array_filter($data[self::FIELDS] ?? []));
+        $model->setFields(array_filter($data[self::FIELDS] ?? [], fn ($v) => $v !== null));
 
         return $model;
     }
@@ -63,86 +63,86 @@ final class Issue implements ApiResponse
         return config('jira.domain') . '/browse/' . $this->key;
     }
 
-    public function setFields($value): self
+    public function setFields(array $value): self
     {
         $this->fields = $value;
 
         return $this;
     }
 
-    public function setField($field, $value): self
+    public function setField(string $field, mixed $value): self
     {
         $this->fields[$field] = $value;
 
         return $this;
     }
 
-    public function setId($value): self
+    public function setId(string $value): self
     {
         $this->id = $value;
 
         return $this;
     }
 
-    public function setKey($value): self
+    public function setKey(string $value): self
     {
         $this->key = $value;
 
         return $this;
     }
 
-    public function setProjectByKey($project): self
+    public function setProjectByKey(string $project): self
     {
         return $this->setField(self::PROJECT, ['key' => $project]);
     }
 
-    public function setSummary($value): self
+    public function setSummary(string $value): self
     {
         return $this->setField(self::SUMMARY, $value);
     }
 
-    public function setDescription($value): self
+    public function setDescription(mixed $value): self
     {
         return $this->setCustomFieldByContent(self::DESCRIPTION, $value);
     }
 
-    public function setIssueType($value): self
+    public function setIssueType(mixed $value): self
     {
         return $this->setField(self::ISSUETYPE, $value);
     }
 
-    public function setDueDate($value): self
+    public function setDueDate(string $value): self
     {
         return $this->setField(self::DUEDATE, $value);
     }
 
-    public function setReporter($value): self
+    public function setReporter(string $value): self
     {
         return $this->setCustomFieldById(self::REPORTER, $value);
     }
 
-    public function setIssueTypeByName($value): self
+    public function setIssueTypeByName(string $value): self
     {
         return $this->setIssueType(["name" => $value]);
     }
 
-    public function setCustomField($field, $value): self
+    public function setCustomField(string $field, mixed $value): self
     {
         return $this->setField($field, $value);
     }
 
-    public function setCustomFieldById($field, $value): self
+    public function setCustomFieldById(string $field, string $value): self
     {
         return $this->setCustomField($field, ["id" => $value]);
     }
 
-    public function setCustomFieldByValue($field, $value, ?bool $is_multi_select = true): self
+    public function setCustomFieldByValue(string $field, mixed $value, ?bool $is_multi_select = true): self
     {
         $value_array = $is_multi_select ? [["value" => $value]] : ["value" => $value];
         return $this->setCustomField($field, $value_array);
     }
 
-    public function setCustomFieldByContent($field, $value): self
+    public function setCustomFieldByContent(string $field, mixed $value): self
     {
         return $this->setField($field, [
             "content" => $value,

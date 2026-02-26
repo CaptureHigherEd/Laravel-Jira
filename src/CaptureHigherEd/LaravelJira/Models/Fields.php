@@ -12,7 +12,7 @@ final class Fields implements ApiResponse
     {
     }
 
-    public static function make(?array $data = []): self
+    public static function make(array $data = []): self
     {
         $fields = [];
 
@@ -27,12 +27,12 @@ final class Fields implements ApiResponse
         return $model;
     }
 
-    public function getFields()
+    public function getFields(): array
     {
         return $this->fields;
     }
 
-    public function getCustomFields()
+    public function getCustomFields(): array
     {
         return array_filter($this->fields, static function (Field $field): bool {
             return str_starts_with($field->getKey(), 'customfield_');
@@ -42,11 +42,11 @@ final class Fields implements ApiResponse
     public function getCustomFieldId(string $name): string
     {
         $field = current(array_filter($this->getCustomFields(), static function (Field $field) use ($name): bool {
-            return $field->getName() == $name;
+            return $field->getName() === $name;
         }));
 
         if (!$field) {
-            throw new CustomFieldDoesNotExistException();
+            throw new CustomFieldDoesNotExistException($name);
         }
 
         return $field->getId();
@@ -55,11 +55,11 @@ final class Fields implements ApiResponse
     public function getCustomField(string $name): Field
     {
         $field = current(array_filter($this->getCustomFields(), static function (Field $field) use ($name): bool {
-            return $field->getName() == $name;
+            return $field->getName() === $name;
         }));
 
         if (!$field) {
-            throw new CustomFieldDoesNotExistException();
+            throw new CustomFieldDoesNotExistException($name);
         }
 
         return $field;
@@ -67,6 +67,6 @@ final class Fields implements ApiResponse
 
     public function toArray(): array
     {
-        return [];
+        return array_map(fn (Field $field) => $field->toArray(), $this->fields);
     }
 }

@@ -2,7 +2,6 @@
 
 namespace CaptureHigherEd\LaravelJira\Providers;
 
-use App\Http\Kernel;
 use Illuminate\Support\ServiceProvider;
 use CaptureHigherEd\LaravelJira\Jira as JiraService;
 use Illuminate\Contracts\Support\DeferrableProvider;
@@ -14,7 +13,7 @@ class IntegrationServiceProvider extends ServiceProvider implements DeferrablePr
      *
      * @return void
      */
-    public function boot(Kernel $kernel)
+    public function boot(): void
     {
     }
 
@@ -33,7 +32,7 @@ class IntegrationServiceProvider extends ServiceProvider implements DeferrablePr
      *
      * @return array
      */
-    public function provides()
+    public function provides(): array
     {
         return [JiraService::class];
     }
