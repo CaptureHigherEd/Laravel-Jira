@@ -245,4 +245,51 @@ class Issues extends HttpApi
 
         return $this->hydrateResponse($response);
     }
+
+    /**
+     * Paginate through all search results
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-jql-get
+     *
+     * @param  array<string, mixed>  $params
+     * @return \Generator<int, Search, mixed, void>
+     */
+    public function paginate(array $params = []): \Generator
+    {
+        return $this->paginateGet('search/jql', $params, Search::class);
+    }
+
+    /**
+     * Paginate through issue types for a project's create metadata
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-createmeta-projectidorkey-issuetypes-get
+     *
+     * @param  array<string, mixed>  $params
+     * @return \Generator<int, IssueTypes, mixed, void>
+     */
+    public function paginateCreateMetaIssueTypes(string $projectKey, array $params = []): \Generator
+    {
+        return $this->paginateGet(
+            sprintf('issue/createmeta/%s/issuetypes', $projectKey),
+            $params,
+            IssueTypes::class
+        );
+    }
+
+    /**
+     * Paginate through field metadata for a specific project and issue type
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-createmeta-projectidorkey-issuetypes-issuetypeid-get
+     *
+     * @param  array<string, mixed>  $params
+     * @return \Generator<int, FieldMetas, mixed, void>
+     */
+    public function paginateCreateMetaFields(string $projectKey, string $issueTypeId, array $params = []): \Generator
+    {
+        return $this->paginateGet(
+            sprintf('issue/createmeta/%s/issuetypes/%s', $projectKey, $issueTypeId),
+            $params,
+            FieldMetas::class
+        );
+    }
 }

@@ -244,4 +244,44 @@ class IssuesTest extends TestCase
 
         $this->assertSame([], $result, 'Issues::removeWatcher() should return an empty array for a successful 204 No Content response');
     }
+
+    // ── pagination ────────────────────────────────────────────────────────
+
+    public function test_paginate(): void
+    {
+        $page1 = $this->jsonResponse(['issues' => [], 'total' => 2, 'maxResults' => 1, 'startAt' => 0]);
+        $page2 = $this->jsonResponse(['issues' => [], 'total' => 2, 'maxResults' => 1, 'startAt' => 1]);
+        $client = $this->mockClientWithResponses([$page1, $page2]);
+        $api = new Issues($client);
+
+        $pages = iterator_to_array($api->paginate());
+
+        $this->assertCount(2, $pages, 'Issues::paginate() should yield one Search per page');
+        $this->assertInstanceOf(Search::class, $pages[0], 'Each yielded value should be a Search instance');
+        $this->assertSame(2, $pages[0]->getTotal(), 'Total should be hydrated from the first page');
+    }
+
+    public function test_paginate_create_meta_issue_types(): void
+    {
+        $response = $this->jsonResponse(['issueTypes' => [], 'total' => 0, 'maxResults' => 50, 'startAt' => 0]);
+        $client = $this->mockClientWithResponses([$response]);
+        $api = new Issues($client);
+
+        $pages = iterator_to_array($api->paginateCreateMetaIssueTypes('TEST'));
+
+        $this->assertCount(1, $pages, 'paginateCreateMetaIssueTypes() should yield one page');
+        $this->assertInstanceOf(IssueTypes::class, $pages[0], 'Each yielded value should be an IssueTypes instance');
+    }
+
+    public function test_paginate_create_meta_fields(): void
+    {
+        $response = $this->jsonResponse(['fields' => [], 'total' => 0, 'maxResults' => 50, 'startAt' => 0]);
+        $client = $this->mockClientWithResponses([$response]);
+        $api = new Issues($client);
+
+        $pages = iterator_to_array($api->paginateCreateMetaFields('TEST', '10001'));
+
+        $this->assertCount(1, $pages, 'paginateCreateMetaFields() should yield one page');
+        $this->assertInstanceOf(FieldMetas::class, $pages[0], 'Each yielded value should be a FieldMetas instance');
+    }
 }

@@ -3,6 +3,8 @@
 namespace CaptureHigherEd\LaravelJira\Api;
 
 use CaptureHigherEd\LaravelJira\Exception\HttpClientException;
+use CaptureHigherEd\LaravelJira\Models\ApiResponse;
+use CaptureHigherEd\LaravelJira\Models\Paginated;
 use GuzzleHttp\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -93,6 +95,30 @@ abstract class HttpApi
             default:
                 throw HttpClientException::unknown($response);
         }
+    }
+
+    /**
+     * Paginate through all pages of a GET endpoint.
+     *
+     * @template T of Paginated&ApiResponse
+     *
+     * @param  array<string, mixed>  $parameters
+     * @param  class-string<T>  $class
+     * @return \Generator<int, T, mixed, void>
+     */
+    protected function paginateGet(string $path, array $parameters, string $class): \Generator
+    {
+        $page = 0;
+        do {
+            $response = $this->httpGet($path, $parameters);
+            $model = $this->hydrateResponse($response, $class);
+            yield $page => $model;
+            $page++;
+            if (! $model->hasMore()) {
+                break;
+            }
+            $parameters['startAt'] = $model->getNextStartAt();
+        } while (true);
     }
 
     protected function hydrateResponse(ResponseInterface $response, ?string $class = null): mixed

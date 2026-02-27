@@ -2,8 +2,12 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class IssueTypes extends Model
+use CaptureHigherEd\LaravelJira\Models\Concerns\HasPagination;
+
+final class IssueTypes extends Model implements Paginated
 {
+    use HasPagination;
+
     /** @var array<int, IssueType> */
     private array $issueTypes = [];
 
@@ -16,6 +20,7 @@ final class IssueTypes extends Model
     {
         $model = new self;
 
+        $model->hydratePagination($data);
         $model->issueTypes = array_map(
             fn (array $item) => IssueType::make($item),
             $data['issueTypes'] ?? []
@@ -33,10 +38,13 @@ final class IssueTypes extends Model
     }
 
     /**
-     * @return array<int, array<string, mixed>>
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {
-        return array_map(fn (IssueType $issueType) => $issueType->toArray(), $this->issueTypes);
+        return [
+            'issueTypes' => array_map(fn (IssueType $issueType) => $issueType->toArray(), $this->issueTypes),
+            ...$this->paginationToArray(),
+        ];
     }
 }

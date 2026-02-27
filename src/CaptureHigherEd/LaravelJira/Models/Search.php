@@ -2,8 +2,12 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class Search extends Model
+use CaptureHigherEd\LaravelJira\Models\Concerns\HasPagination;
+
+final class Search extends Model implements Paginated
 {
+    use HasPagination;
+
     /** @var array<int, Issue> */
     private array $issues = [];
 
@@ -16,6 +20,7 @@ final class Search extends Model
     {
         $model = new self;
 
+        $model->hydratePagination($data);
         $model->issues = array_map(
             fn (array $item) => Issue::make($item),
             $data['issues'] ?? []
@@ -39,6 +44,7 @@ final class Search extends Model
     {
         return [
             'issues' => array_map(fn (Issue $issue) => $issue->toArray(), $this->issues),
+            ...$this->paginationToArray(),
         ];
     }
 }

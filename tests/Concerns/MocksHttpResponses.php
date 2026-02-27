@@ -62,4 +62,15 @@ trait MocksHttpResponses
 
         return $client;
     }
+
+    /**
+     * @param  array<int, ResponseInterface>  $responses
+     */
+    protected function mockClientWithResponses(array $responses): ClientInterface
+    {
+        $client = $this->createMock(ClientInterface::class);
+        $client->method('request')->willReturnOnConsecutiveCalls(...$responses);
+
+        return $client;
+    }
 }

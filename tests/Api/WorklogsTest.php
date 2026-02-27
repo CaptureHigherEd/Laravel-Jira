@@ -68,4 +68,18 @@ class WorklogsTest extends TestCase
 
         $this->assertSame([], $result, 'Worklogs::delete() should return an empty array for a successful 204 No Content response');
     }
+
+    public function test_paginate(): void
+    {
+        $page1 = $this->jsonResponse(['worklogs' => [], 'total' => 2, 'maxResults' => 1, 'startAt' => 0]);
+        $page2 = $this->jsonResponse(['worklogs' => [], 'total' => 2, 'maxResults' => 1, 'startAt' => 1]);
+        $client = $this->mockClientWithResponses([$page1, $page2]);
+        $api = new Worklogs($client);
+
+        $pages = iterator_to_array($api->paginate('KEY-1'));
+
+        $this->assertCount(2, $pages, 'Worklogs::paginate() should yield one page per HTTP response');
+        $this->assertInstanceOf(ModelsWorklogs::class, $pages[0], 'Each yielded value should be a ModelsWorklogs instance');
+        $this->assertSame(2, $pages[0]->getTotal(), 'Total should be hydrated from the first page response');
+    }
 }

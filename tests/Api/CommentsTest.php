@@ -78,4 +78,18 @@ class CommentsTest extends TestCase
 
         $this->assertSame([], $result, 'Comments::delete() should return an empty array for a successful 204 No Content response');
     }
+
+    public function test_paginate(): void
+    {
+        $page1 = $this->jsonResponse(['comments' => [], 'total' => 2, 'maxResults' => 1, 'startAt' => 0]);
+        $page2 = $this->jsonResponse(['comments' => [], 'total' => 2, 'maxResults' => 1, 'startAt' => 1]);
+        $client = $this->mockClientWithResponses([$page1, $page2]);
+        $api = new Comments($client);
+
+        $pages = iterator_to_array($api->paginate('KEY-1'));
+
+        $this->assertCount(2, $pages, 'Comments::paginate() should yield one page per HTTP response');
+        $this->assertInstanceOf(ModelsComments::class, $pages[0], 'Each yielded value should be a ModelsComments instance');
+        $this->assertSame(2, $pages[0]->getTotal(), 'Total should be hydrated from the first page response');
+    }
 }

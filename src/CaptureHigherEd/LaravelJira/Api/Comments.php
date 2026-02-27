@@ -77,4 +77,17 @@ class Comments extends HttpApi
 
         return $this->hydrateResponse($response);
     }
+
+    /**
+     * Paginate through all comments for an issue
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-get
+     *
+     * @param  array<string, mixed>  $params
+     * @return \Generator<int, ModelsComments, mixed, void>
+     */
+    public function paginate(string $issueId, array $params = []): \Generator
+    {
+        return $this->paginateGet(sprintf('issue/%s/comment', $issueId), $params, ModelsComments::class);
+    }
 }

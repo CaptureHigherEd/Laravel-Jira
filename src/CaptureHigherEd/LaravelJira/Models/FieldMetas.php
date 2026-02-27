@@ -2,8 +2,12 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class FieldMetas extends Model
+use CaptureHigherEd\LaravelJira\Models\Concerns\HasPagination;
+
+final class FieldMetas extends Model implements Paginated
 {
+    use HasPagination;
+
     /** @var array<int, FieldMeta> */
     private array $fields = [];
 
@@ -16,6 +20,7 @@ final class FieldMetas extends Model
     {
         $model = new self;
 
+        $model->hydratePagination($data);
         $model->fields = array_map(
             fn (array $item) => FieldMeta::make($item),
             $data['fields'] ?? []
@@ -33,10 +38,13 @@ final class FieldMetas extends Model
     }
 
     /**
-     * @return array<int, array<string, mixed>>
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {
-        return array_map(fn (FieldMeta $field) => $field->toArray(), $this->fields);
+        return [
+            'fields' => array_map(fn (FieldMeta $field) => $field->toArray(), $this->fields),
+            ...$this->paginationToArray(),
+        ];
     }
 }

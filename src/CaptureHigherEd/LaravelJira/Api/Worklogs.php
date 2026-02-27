@@ -65,4 +65,17 @@ class Worklogs extends HttpApi
 
         return $this->hydrateResponse($response);
     }
+
+    /**
+     * Paginate through all worklogs for an issue
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get
+     *
+     * @param  array<string, mixed>  $params
+     * @return \Generator<int, ModelsWorklogs, mixed, void>
+     */
+    public function paginate(string $issueId, array $params = []): \Generator
+    {
+        return $this->paginateGet(sprintf('issue/%s/worklog', $issueId), $params, ModelsWorklogs::class);
+    }
 }
