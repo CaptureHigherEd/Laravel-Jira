@@ -3,6 +3,7 @@
 namespace CaptureHigherEd\LaravelJira\Tests\Api;
 
 use CaptureHigherEd\LaravelJira\Api\Projects;
+use CaptureHigherEd\LaravelJira\Exception\InvalidArgumentException;
 use CaptureHigherEd\LaravelJira\Models\Project;
 use CaptureHigherEd\LaravelJira\Models\Projects as ModelsProjects;
 use CaptureHigherEd\LaravelJira\Tests\Concerns\MocksHttpResponses;
@@ -48,5 +49,14 @@ class ProjectsTest extends TestCase
 
         $this->assertInstanceOf(Project::class, $result, 'Projects::show() should return a Project model instance');
         $this->assertSame('TEST', $result->getKey(), 'Projects::show() should return the project with the correct key');
+    }
+
+    // ── Validation ────────────────────────────────────────────────────────
+
+    public function test_show_throws_on_empty_project_key(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $api = new Projects($this->mockClient($this->jsonResponse([])));
+        $api->show('');
     }
 }

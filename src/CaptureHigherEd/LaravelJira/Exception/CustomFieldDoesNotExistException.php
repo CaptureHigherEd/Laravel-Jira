@@ -2,7 +2,7 @@
 
 namespace CaptureHigherEd\LaravelJira\Exception;
 
-final class CustomFieldDoesNotExistException extends \RuntimeException
+final class CustomFieldDoesNotExistException extends \RuntimeException implements JiraException
 {
     public function __construct(string $fieldName = '')
     {

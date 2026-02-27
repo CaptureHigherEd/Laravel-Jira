@@ -2,6 +2,7 @@
 
 namespace CaptureHigherEd\LaravelJira\Api;
 
+use CaptureHigherEd\LaravelJira\Assert;
 use CaptureHigherEd\LaravelJira\Models\User;
 use CaptureHigherEd\LaravelJira\Models\Users as ModelsUsers;
 
@@ -31,6 +32,7 @@ class Users extends HttpApi
      */
     public function show(string $accountId): User
     {
+        Assert::stringNotEmpty($accountId, 'Account ID must not be empty.');
         $response = $this->httpGet('user', ['accountId' => $accountId]);
 
         return $this->hydrateResponse($response, User::class);

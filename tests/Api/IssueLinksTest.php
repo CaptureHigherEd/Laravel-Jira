@@ -3,6 +3,7 @@
 namespace CaptureHigherEd\LaravelJira\Tests\Api;
 
 use CaptureHigherEd\LaravelJira\Api\IssueLinks;
+use CaptureHigherEd\LaravelJira\Exception\InvalidArgumentException;
 use CaptureHigherEd\LaravelJira\Models\IssueLink;
 use CaptureHigherEd\LaravelJira\Models\IssueLinkTypes;
 use CaptureHigherEd\LaravelJira\Tests\Concerns\MocksHttpResponses;
@@ -68,5 +69,24 @@ class IssueLinksTest extends TestCase
         $this->assertInstanceOf(IssueLinkTypes::class, $result, 'IssueLinks::getTypes() should return an IssueLinkTypes instance');
         $this->assertCount(1, $result->getTypes(), 'IssueLinks::getTypes() should return the correct number of link types');
         $this->assertSame('Blocks', $result->getTypes()[0]->getName(), 'IssueLinks::getTypes() should hydrate the type name correctly');
+    }
+
+    // ── Validation ────────────────────────────────────────────────────────
+
+    private function makeApi(): IssueLinks
+    {
+        return new IssueLinks($this->mockClient($this->jsonResponse([])));
+    }
+
+    public function test_show_throws_on_empty_link_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->show('');
+    }
+
+    public function test_delete_throws_on_empty_link_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->delete('');
     }
 }

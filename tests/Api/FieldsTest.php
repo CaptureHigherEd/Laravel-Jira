@@ -3,6 +3,7 @@
 namespace CaptureHigherEd\LaravelJira\Tests\Api;
 
 use CaptureHigherEd\LaravelJira\Api\Fields;
+use CaptureHigherEd\LaravelJira\Exception\InvalidArgumentException;
 use CaptureHigherEd\LaravelJira\Models\Field;
 use CaptureHigherEd\LaravelJira\Models\Fields as ModelsFields;
 use CaptureHigherEd\LaravelJira\Tests\Concerns\MocksHttpResponses;
@@ -134,5 +135,25 @@ class FieldsTest extends TestCase
                 'getFieldOptions() should return an empty array when the field ID does not exist in the issue type fields',
             ],
         ];
+    }
+
+    // ── Validation ────────────────────────────────────────────────────────
+
+    public function test_get_field_options_throws_on_empty_project_key(): void
+    {
+        $api = new Fields($this->mockClient($this->jsonResponse([])));
+        $field = $this->makeCustomField('customfield_10001');
+
+        $this->expectException(InvalidArgumentException::class);
+        $api->getFieldOptions($field, '', 'Bug');
+    }
+
+    public function test_get_field_options_throws_on_empty_issue_type_name(): void
+    {
+        $api = new Fields($this->mockClient($this->jsonResponse([])));
+        $field = $this->makeCustomField('customfield_10001');
+
+        $this->expectException(InvalidArgumentException::class);
+        $api->getFieldOptions($field, 'CBE4', '');
     }
 }

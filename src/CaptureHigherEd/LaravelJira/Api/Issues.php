@@ -2,6 +2,7 @@
 
 namespace CaptureHigherEd\LaravelJira\Api;
 
+use CaptureHigherEd\LaravelJira\Assert;
 use CaptureHigherEd\LaravelJira\Models\Attachments;
 use CaptureHigherEd\LaravelJira\Models\Comment;
 use CaptureHigherEd\LaravelJira\Models\FieldMetas;
@@ -39,6 +40,7 @@ class Issues extends HttpApi
      */
     public function show(string $issueId, array $params = []): Issue
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
         $response = $this->httpGet(sprintf('issue/%s', $issueId), $params);
 
         return $this->hydrateResponse($response, Issue::class);
@@ -67,6 +69,7 @@ class Issues extends HttpApi
      */
     public function attach(string $issueId, array $params = []): Attachments
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
         $response = $this->httpPostWithAttachments(sprintf('issue/%s/attachments', $issueId), $params);
 
         return $this->hydrateResponse($response, Attachments::class);
@@ -81,6 +84,8 @@ class Issues extends HttpApi
      */
     public function comment(string $issueId, array $params = []): Comment
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
+
         return (new Comments($this->httpClient))->create($issueId, $params);
     }
 
@@ -94,6 +99,7 @@ class Issues extends HttpApi
      */
     public function update(string $issueId, array $params = []): array
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
         $response = $this->httpPut(sprintf('issue/%s', $issueId), $params);
 
         return $this->hydrateResponse($response);
@@ -124,6 +130,7 @@ class Issues extends HttpApi
      */
     public function getCreateMetaIssueTypes(string $projectKey, array $params = []): IssueTypes
     {
+        Assert::stringNotEmpty($projectKey, 'Project key must not be empty.');
         $response = $this->httpGet(sprintf('issue/createmeta/%s/issuetypes', $projectKey), $params);
 
         return $this->hydrateResponse($response, IssueTypes::class);
@@ -138,6 +145,8 @@ class Issues extends HttpApi
      */
     public function getCreateMetaFields(string $projectKey, string $issueTypeId, array $params = []): FieldMetas
     {
+        Assert::stringNotEmpty($projectKey, 'Project key must not be empty.');
+        Assert::stringNotEmpty($issueTypeId, 'Issue type ID must not be empty.');
         $response = $this->httpGet(
             sprintf('issue/createmeta/%s/issuetypes/%s', $projectKey, $issueTypeId),
             $params
@@ -155,6 +164,7 @@ class Issues extends HttpApi
      */
     public function delete(string $issueId): array
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
         $response = $this->httpDelete(sprintf('issue/%s', $issueId));
 
         return $this->hydrateResponse($response);
@@ -167,6 +177,7 @@ class Issues extends HttpApi
      */
     public function getTransitions(string $issueId): Transitions
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
         $response = $this->httpGet(sprintf('issue/%s/transitions', $issueId));
 
         return $this->hydrateResponse($response, Transitions::class);
@@ -182,6 +193,7 @@ class Issues extends HttpApi
      */
     public function transition(string $issueId, array $params = []): array
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
         $response = $this->httpPost(sprintf('issue/%s/transitions', $issueId), $params);
 
         return $this->hydrateResponse($response);
@@ -196,6 +208,8 @@ class Issues extends HttpApi
      */
     public function assign(string $issueId, string $accountId): array
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
+        Assert::stringNotEmpty($accountId, 'Account ID must not be empty.');
         $response = $this->httpPut(sprintf('issue/%s/assignee', $issueId), ['accountId' => $accountId]);
 
         return $this->hydrateResponse($response);
@@ -208,6 +222,7 @@ class Issues extends HttpApi
      */
     public function getWatchers(string $issueId): Watchers
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
         $response = $this->httpGet(sprintf('issue/%s/watchers', $issueId));
 
         return $this->hydrateResponse($response, Watchers::class);
@@ -224,6 +239,8 @@ class Issues extends HttpApi
      */
     public function addWatcher(string $issueId, string $accountId): array
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
+        Assert::stringNotEmpty($accountId, 'Account ID must not be empty.');
         $response = $this->httpClient->request('POST', sprintf('issue/%s/watchers', $issueId), [
             'body' => json_encode($accountId),
             'headers' => ['Content-Type' => 'application/json'],
@@ -241,6 +258,8 @@ class Issues extends HttpApi
      */
     public function removeWatcher(string $issueId, string $accountId): array
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
+        Assert::stringNotEmpty($accountId, 'Account ID must not be empty.');
         $response = $this->httpDelete(sprintf('issue/%s/watchers', $issueId), ['accountId' => $accountId]);
 
         return $this->hydrateResponse($response);
@@ -269,6 +288,8 @@ class Issues extends HttpApi
      */
     public function paginateCreateMetaIssueTypes(string $projectKey, array $params = []): \Generator
     {
+        Assert::stringNotEmpty($projectKey, 'Project key must not be empty.');
+
         return $this->paginateGet(
             sprintf('issue/createmeta/%s/issuetypes', $projectKey),
             $params,
@@ -286,6 +307,9 @@ class Issues extends HttpApi
      */
     public function paginateCreateMetaFields(string $projectKey, string $issueTypeId, array $params = []): \Generator
     {
+        Assert::stringNotEmpty($projectKey, 'Project key must not be empty.');
+        Assert::stringNotEmpty($issueTypeId, 'Issue type ID must not be empty.');
+
         return $this->paginateGet(
             sprintf('issue/createmeta/%s/issuetypes/%s', $projectKey, $issueTypeId),
             $params,

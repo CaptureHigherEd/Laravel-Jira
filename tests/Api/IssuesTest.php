@@ -3,6 +3,7 @@
 namespace CaptureHigherEd\LaravelJira\Tests\Api;
 
 use CaptureHigherEd\LaravelJira\Api\Issues;
+use CaptureHigherEd\LaravelJira\Exception\InvalidArgumentException;
 use CaptureHigherEd\LaravelJira\Models\Attachments;
 use CaptureHigherEd\LaravelJira\Models\Comment;
 use CaptureHigherEd\LaravelJira\Models\FieldMetas;
@@ -283,5 +284,132 @@ class IssuesTest extends TestCase
 
         $this->assertCount(1, $pages, 'paginateCreateMetaFields() should yield one page');
         $this->assertInstanceOf(FieldMetas::class, $pages[0], 'Each yielded value should be a FieldMetas instance');
+    }
+
+    // ── Validation ────────────────────────────────────────────────────────
+
+    private function makeApi(): Issues
+    {
+        return new Issues($this->mockClient($this->jsonResponse([])));
+    }
+
+    public function test_show_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->show('');
+    }
+
+    public function test_attach_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->attach('');
+    }
+
+    public function test_comment_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->comment('');
+    }
+
+    public function test_update_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->update('');
+    }
+
+    public function test_delete_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->delete('');
+    }
+
+    public function test_get_transitions_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->getTransitions('');
+    }
+
+    public function test_transition_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->transition('');
+    }
+
+    public function test_assign_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->assign('', 'u1');
+    }
+
+    public function test_assign_throws_on_empty_account_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->assign('KEY-1', '');
+    }
+
+    public function test_get_watchers_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->getWatchers('');
+    }
+
+    public function test_add_watcher_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->addWatcher('', 'u1');
+    }
+
+    public function test_add_watcher_throws_on_empty_account_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->addWatcher('KEY-1', '');
+    }
+
+    public function test_remove_watcher_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->removeWatcher('', 'u1');
+    }
+
+    public function test_remove_watcher_throws_on_empty_account_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->removeWatcher('KEY-1', '');
+    }
+
+    public function test_get_create_meta_issue_types_throws_on_empty_project_key(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->getCreateMetaIssueTypes('');
+    }
+
+    public function test_get_create_meta_fields_throws_on_empty_project_key(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->getCreateMetaFields('', '10001');
+    }
+
+    public function test_get_create_meta_fields_throws_on_empty_issue_type_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->getCreateMetaFields('TEST', '');
+    }
+
+    public function test_paginate_create_meta_issue_types_throws_on_empty_project_key(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        iterator_to_array($this->makeApi()->paginateCreateMetaIssueTypes(''));
+    }
+
+    public function test_paginate_create_meta_fields_throws_on_empty_project_key(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        iterator_to_array($this->makeApi()->paginateCreateMetaFields('', '10001'));
+    }
+
+    public function test_paginate_create_meta_fields_throws_on_empty_issue_type_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        iterator_to_array($this->makeApi()->paginateCreateMetaFields('TEST', ''));
     }
 }

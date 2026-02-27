@@ -4,6 +4,8 @@ namespace CaptureHigherEd\LaravelJira\Tests\Api;
 
 use CaptureHigherEd\LaravelJira\Api\HttpApi;
 use CaptureHigherEd\LaravelJira\Exception\HttpClientException;
+use CaptureHigherEd\LaravelJira\Exception\HttpServerException;
+use CaptureHigherEd\LaravelJira\Exception\HydrationException;
 use CaptureHigherEd\LaravelJira\Models\ApiResponse;
 use CaptureHigherEd\LaravelJira\Models\Paginated;
 use CaptureHigherEd\LaravelJira\Models\Search;
@@ -74,6 +76,26 @@ class HttpApiTest extends TestCase
                 return $this->paginateGet($path, $parameters, $class);
             }
         };
+    }
+
+    // ── getLastResponse ───────────────────────────────────────────────────
+
+    public function test_get_last_response_returns_null_initially(): void
+    {
+        $response = $this->jsonResponse([]);
+        $api = $this->makeApiWithResponse($response);
+
+        $this->assertNull($api->getLastResponse(), 'getLastResponse() should return null before any HTTP call is made');
+    }
+
+    public function test_get_last_response_stores_most_recent(): void
+    {
+        $response = $this->jsonResponse(['key' => 'value']);
+        $api = $this->makeApiWithResponse($response);
+
+        $api->callHttpGet('search');
+
+        $this->assertSame($response, $api->getLastResponse(), 'getLastResponse() should return the last ResponseInterface after an HTTP call');
     }
 
     // ── hydrateResponse ──────────────────────────────────────────────────
@@ -151,20 +173,20 @@ class HttpApiTest extends TestCase
         $this->assertSame($data, $result, 'hydrateResponse() should return the raw decoded array when no class is provided');
     }
 
-    public function test_hydrate_invalid_json_returns_empty_array(): void
+    public function test_hydrate_invalid_json_throws_hydration_exception(): void
     {
         $response = $this->mockResponse(200, 'not-valid-json', ['Content-Type' => 'application/json']);
         $api = $this->makeApiWithResponse($response);
 
-        $result = $api->callHydrateResponse($response);
+        $this->expectException(HydrationException::class);
 
-        $this->assertSame([], $result, 'hydrateResponse() should return an empty array when the response body contains invalid JSON');
+        $api->callHydrateResponse($response);
     }
 
     // ── handleErrors ─────────────────────────────────────────────────────
 
-    /** @dataProvider errorStatusProvider */
-    public function test_handle_errors_throws_for_status(int $status): void
+    /** @dataProvider clientErrorStatusProvider */
+    public function test_handle_errors_throws_client_exception_for_4xx(int $status): void
     {
         $response = $this->plainErrorResponse($status, 'error');
         $api = $this->makeApiWithResponse($response);
@@ -175,7 +197,7 @@ class HttpApiTest extends TestCase
     }
 
     /** @return array<string, array{int}> */
-    public static function errorStatusProvider(): array
+    public static function clientErrorStatusProvider(): array
     {
         return [
             '400' => [400],
@@ -187,10 +209,29 @@ class HttpApiTest extends TestCase
             '413' => [413],
             '422' => [422],
             '429' => [429],
+            '418 unknown' => [418],
+        ];
+    }
+
+    /** @dataProvider serverErrorStatusProvider */
+    public function test_handle_errors_throws_server_exception_for_5xx(int $status): void
+    {
+        $response = $this->plainErrorResponse($status, 'error');
+        $api = $this->makeApiWithResponse($response);
+
+        $this->expectException(HttpServerException::class);
+
+        $api->callHandleErrors($response);
+    }
+
+    /** @return array<string, array{int}> */
+    public static function serverErrorStatusProvider(): array
+    {
+        return [
             '500' => [500],
             '502' => [502],
             '503' => [503],
-            '418 unknown' => [418],
+            '504 unknown server' => [504],
         ];
     }
 

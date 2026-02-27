@@ -3,6 +3,8 @@
 namespace CaptureHigherEd\LaravelJira\Api;
 
 use CaptureHigherEd\LaravelJira\Exception\HttpClientException;
+use CaptureHigherEd\LaravelJira\Exception\HttpServerException;
+use CaptureHigherEd\LaravelJira\Exception\HydrationException;
 use CaptureHigherEd\LaravelJira\Models\ApiResponse;
 use CaptureHigherEd\LaravelJira\Models\Paginated;
 use GuzzleHttp\ClientInterface;
@@ -12,9 +14,16 @@ abstract class HttpApi
 {
     protected ClientInterface $httpClient;
 
+    protected ?ResponseInterface $lastResponse = null;
+
     public function __construct(ClientInterface $httpClient)
     {
         $this->httpClient = $httpClient;
+    }
+
+    public function getLastResponse(): ?ResponseInterface
+    {
+        return $this->lastResponse;
     }
 
     /**
@@ -23,7 +32,7 @@ abstract class HttpApi
      */
     protected function httpGet(string $path, array $parameters = []): ResponseInterface
     {
-        return $this->httpClient->request('GET', $path, ['query' => $parameters]);
+        return $this->lastResponse = $this->httpClient->request('GET', $path, ['query' => $parameters]);
     }
 
     /**
@@ -32,7 +41,7 @@ abstract class HttpApi
      */
     protected function httpPost(string $path, array $parameters = []): ResponseInterface
     {
-        return $this->httpClient->request('POST', $path, ['json' => $parameters]);
+        return $this->lastResponse = $this->httpClient->request('POST', $path, ['json' => $parameters]);
     }
 
     /**
@@ -41,7 +50,7 @@ abstract class HttpApi
      */
     protected function httpPostWithAttachments(string $path, array $multipart = []): ResponseInterface
     {
-        return $this->httpClient->request('POST', $path, ['multipart' => $multipart, 'headers' => [
+        return $this->lastResponse = $this->httpClient->request('POST', $path, ['multipart' => $multipart, 'headers' => [
             'Accept' => 'application/json',
             'X-Atlassian-Token' => 'no-check',
         ]]);
@@ -53,7 +62,7 @@ abstract class HttpApi
      */
     protected function httpPut(string $path, array $parameters = []): ResponseInterface
     {
-        return $this->httpClient->request('PUT', $path, ['json' => $parameters]);
+        return $this->lastResponse = $this->httpClient->request('PUT', $path, ['json' => $parameters]);
     }
 
     /**
@@ -62,7 +71,7 @@ abstract class HttpApi
      */
     protected function httpDelete(string $path, array $parameters = []): ResponseInterface
     {
-        return $this->httpClient->request('DELETE', $path, ['query' => $parameters]);
+        return $this->lastResponse = $this->httpClient->request('DELETE', $path, ['query' => $parameters]);
     }
 
     protected function handleErrors(ResponseInterface $response): void
@@ -91,8 +100,11 @@ abstract class HttpApi
             case 500:
             case 502:
             case 503:
-                throw HttpClientException::serverError($response);
+                throw HttpServerException::serverError($response);
             default:
+                if ($statusCode >= 500) {
+                    throw HttpServerException::serverError($response);
+                }
                 throw HttpClientException::unknown($response);
         }
     }
@@ -139,7 +151,11 @@ abstract class HttpApi
             return $class ? $class::make([]) : [];
         }
 
-        $data = json_decode($body, true) ?? [];
+        $data = json_decode($body, true);
+
+        if (! is_array($data)) {
+            throw HydrationException::jsonDecodeFailed($body);
+        }
 
         if (! $class) {
             return $data;

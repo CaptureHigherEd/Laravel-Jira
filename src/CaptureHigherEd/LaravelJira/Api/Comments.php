@@ -2,6 +2,7 @@
 
 namespace CaptureHigherEd\LaravelJira\Api;
 
+use CaptureHigherEd\LaravelJira\Assert;
 use CaptureHigherEd\LaravelJira\Models\Comment;
 use CaptureHigherEd\LaravelJira\Models\Comments as ModelsComments;
 
@@ -19,6 +20,7 @@ class Comments extends HttpApi
      */
     public function index(string $issueId, array $params = []): ModelsComments
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
         $response = $this->httpGet(sprintf('issue/%s/comment', $issueId), $params);
 
         return $this->hydrateResponse($response, ModelsComments::class);
@@ -31,6 +33,8 @@ class Comments extends HttpApi
      */
     public function show(string $issueId, string $commentId): Comment
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
+        Assert::stringNotEmpty($commentId, 'Comment ID must not be empty.');
         $response = $this->httpGet(sprintf('issue/%s/comment/%s', $issueId, $commentId));
 
         return $this->hydrateResponse($response, Comment::class);
@@ -45,6 +49,7 @@ class Comments extends HttpApi
      */
     public function create(string $issueId, array $params = []): Comment
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
         $response = $this->httpPost(sprintf('issue/%s/comment', $issueId), $params);
 
         return $this->hydrateResponse($response, Comment::class);
@@ -59,6 +64,8 @@ class Comments extends HttpApi
      */
     public function update(string $issueId, string $commentId, array $params = []): Comment
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
+        Assert::stringNotEmpty($commentId, 'Comment ID must not be empty.');
         $response = $this->httpPut(sprintf('issue/%s/comment/%s', $issueId, $commentId), $params);
 
         return $this->hydrateResponse($response, Comment::class);
@@ -73,6 +80,8 @@ class Comments extends HttpApi
      */
     public function delete(string $issueId, string $commentId): array
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
+        Assert::stringNotEmpty($commentId, 'Comment ID must not be empty.');
         $response = $this->httpDelete(sprintf('issue/%s/comment/%s', $issueId, $commentId));
 
         return $this->hydrateResponse($response);
@@ -88,6 +97,8 @@ class Comments extends HttpApi
      */
     public function paginate(string $issueId, array $params = []): \Generator
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
+
         return $this->paginateGet(sprintf('issue/%s/comment', $issueId), $params, ModelsComments::class);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace CaptureHigherEd\LaravelJira\Api;
 
+use CaptureHigherEd\LaravelJira\Assert;
 use CaptureHigherEd\LaravelJira\Models\Field;
 use CaptureHigherEd\LaravelJira\Models\Fields as ModelsFields;
 
@@ -52,6 +53,9 @@ class Fields extends HttpApi
      */
     public function getFieldOptions(Field $field, string $projectKey, string $issueTypeName): array
     {
+        Assert::stringNotEmpty($projectKey, 'Project key must not be empty.');
+        Assert::stringNotEmpty($issueTypeName, 'Issue type name must not be empty.');
+
         /** @var array<string, mixed> $meta */
         $meta = $this->hydrateResponse(
             $this->httpGet('issue/createmeta', ['expand' => 'projects.issuetypes.fields'])

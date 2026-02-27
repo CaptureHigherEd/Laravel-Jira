@@ -2,6 +2,7 @@
 
 namespace CaptureHigherEd\LaravelJira\Api;
 
+use CaptureHigherEd\LaravelJira\Assert;
 use CaptureHigherEd\LaravelJira\Models\Worklog;
 use CaptureHigherEd\LaravelJira\Models\Worklogs as ModelsWorklogs;
 
@@ -19,6 +20,7 @@ class Worklogs extends HttpApi
      */
     public function index(string $issueId, array $params = []): ModelsWorklogs
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
         $response = $this->httpGet(sprintf('issue/%s/worklog', $issueId), $params);
 
         return $this->hydrateResponse($response, ModelsWorklogs::class);
@@ -33,6 +35,7 @@ class Worklogs extends HttpApi
      */
     public function create(string $issueId, array $params = []): Worklog
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
         $response = $this->httpPost(sprintf('issue/%s/worklog', $issueId), $params);
 
         return $this->hydrateResponse($response, Worklog::class);
@@ -47,6 +50,8 @@ class Worklogs extends HttpApi
      */
     public function update(string $issueId, string $worklogId, array $params = []): Worklog
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
+        Assert::stringNotEmpty($worklogId, 'Worklog ID must not be empty.');
         $response = $this->httpPut(sprintf('issue/%s/worklog/%s', $issueId, $worklogId), $params);
 
         return $this->hydrateResponse($response, Worklog::class);
@@ -61,6 +66,8 @@ class Worklogs extends HttpApi
      */
     public function delete(string $issueId, string $worklogId): array
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
+        Assert::stringNotEmpty($worklogId, 'Worklog ID must not be empty.');
         $response = $this->httpDelete(sprintf('issue/%s/worklog/%s', $issueId, $worklogId));
 
         return $this->hydrateResponse($response);
@@ -76,6 +83,8 @@ class Worklogs extends HttpApi
      */
     public function paginate(string $issueId, array $params = []): \Generator
     {
+        Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
+
         return $this->paginateGet(sprintf('issue/%s/worklog', $issueId), $params, ModelsWorklogs::class);
     }
 }

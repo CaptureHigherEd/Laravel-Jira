@@ -3,6 +3,7 @@
 namespace CaptureHigherEd\LaravelJira\Tests\Api;
 
 use CaptureHigherEd\LaravelJira\Api\Worklogs;
+use CaptureHigherEd\LaravelJira\Exception\InvalidArgumentException;
 use CaptureHigherEd\LaravelJira\Models\Worklog;
 use CaptureHigherEd\LaravelJira\Models\Worklogs as ModelsWorklogs;
 use CaptureHigherEd\LaravelJira\Tests\Concerns\MocksHttpResponses;
@@ -81,5 +82,54 @@ class WorklogsTest extends TestCase
         $this->assertCount(2, $pages, 'Worklogs::paginate() should yield one page per HTTP response');
         $this->assertInstanceOf(ModelsWorklogs::class, $pages[0], 'Each yielded value should be a ModelsWorklogs instance');
         $this->assertSame(2, $pages[0]->getTotal(), 'Total should be hydrated from the first page response');
+    }
+
+    // ── Validation ────────────────────────────────────────────────────────
+
+    private function makeApi(): Worklogs
+    {
+        return new Worklogs($this->mockClient($this->jsonResponse([])));
+    }
+
+    public function test_index_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->index('');
+    }
+
+    public function test_create_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->create('');
+    }
+
+    public function test_update_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->update('', '200');
+    }
+
+    public function test_update_throws_on_empty_worklog_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->update('KEY-1', '');
+    }
+
+    public function test_delete_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->delete('', '200');
+    }
+
+    public function test_delete_throws_on_empty_worklog_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->delete('KEY-1', '');
+    }
+
+    public function test_paginate_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        iterator_to_array($this->makeApi()->paginate(''));
     }
 }

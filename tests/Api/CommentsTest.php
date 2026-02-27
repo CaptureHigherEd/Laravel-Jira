@@ -3,6 +3,7 @@
 namespace CaptureHigherEd\LaravelJira\Tests\Api;
 
 use CaptureHigherEd\LaravelJira\Api\Comments;
+use CaptureHigherEd\LaravelJira\Exception\InvalidArgumentException;
 use CaptureHigherEd\LaravelJira\Models\Comment;
 use CaptureHigherEd\LaravelJira\Models\Comments as ModelsComments;
 use CaptureHigherEd\LaravelJira\Tests\Concerns\MocksHttpResponses;
@@ -91,5 +92,66 @@ class CommentsTest extends TestCase
         $this->assertCount(2, $pages, 'Comments::paginate() should yield one page per HTTP response');
         $this->assertInstanceOf(ModelsComments::class, $pages[0], 'Each yielded value should be a ModelsComments instance');
         $this->assertSame(2, $pages[0]->getTotal(), 'Total should be hydrated from the first page response');
+    }
+
+    // ── Validation ────────────────────────────────────────────────────────
+
+    private function makeApi(): Comments
+    {
+        return new Comments($this->mockClient($this->jsonResponse([])));
+    }
+
+    public function test_index_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->index('');
+    }
+
+    public function test_show_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->show('', '42');
+    }
+
+    public function test_show_throws_on_empty_comment_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->show('KEY-1', '');
+    }
+
+    public function test_create_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->create('');
+    }
+
+    public function test_update_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->update('', '42');
+    }
+
+    public function test_update_throws_on_empty_comment_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->update('KEY-1', '');
+    }
+
+    public function test_delete_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->delete('', '42');
+    }
+
+    public function test_delete_throws_on_empty_comment_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->delete('KEY-1', '');
+    }
+
+    public function test_paginate_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        iterator_to_array($this->makeApi()->paginate(''));
     }
 }

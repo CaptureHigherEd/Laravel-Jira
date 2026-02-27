@@ -3,6 +3,7 @@
 namespace CaptureHigherEd\LaravelJira\Tests\Api;
 
 use CaptureHigherEd\LaravelJira\Api\Users;
+use CaptureHigherEd\LaravelJira\Exception\InvalidArgumentException;
 use CaptureHigherEd\LaravelJira\Models\User;
 use CaptureHigherEd\LaravelJira\Models\Users as ModelsUsers;
 use CaptureHigherEd\LaravelJira\Tests\Concerns\MocksHttpResponses;
@@ -73,5 +74,14 @@ class UsersTest extends TestCase
 
         $this->assertInstanceOf(User::class, $result, 'Users::myself() should return a User model instance');
         $this->assertSame('me', $result->getKey(), 'Users::myself() should return the current user with the correct accountId');
+    }
+
+    // ── Validation ────────────────────────────────────────────────────────
+
+    public function test_show_throws_on_empty_account_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $api = new Users($this->mockClient($this->jsonResponse([])));
+        $api->show('');
     }
 }

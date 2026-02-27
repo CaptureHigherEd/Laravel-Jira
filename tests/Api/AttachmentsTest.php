@@ -3,6 +3,7 @@
 namespace CaptureHigherEd\LaravelJira\Tests\Api;
 
 use CaptureHigherEd\LaravelJira\Api\Attachments;
+use CaptureHigherEd\LaravelJira\Exception\InvalidArgumentException;
 use CaptureHigherEd\LaravelJira\Models\Attachment;
 use CaptureHigherEd\LaravelJira\Tests\Concerns\MocksHttpResponses;
 use PHPUnit\Framework\TestCase;
@@ -54,5 +55,24 @@ class AttachmentsTest extends TestCase
         $result = $api->getMeta();
 
         $this->assertSame($meta, $result, 'Attachments::getMeta() should return the raw metadata array from the API response');
+    }
+
+    // ── Validation ────────────────────────────────────────────────────────
+
+    private function makeApi(): Attachments
+    {
+        return new Attachments($this->mockClient($this->jsonResponse([])));
+    }
+
+    public function test_show_throws_on_empty_attachment_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->show('');
+    }
+
+    public function test_delete_throws_on_empty_attachment_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->delete('');
     }
 }
