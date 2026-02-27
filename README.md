@@ -49,20 +49,20 @@ $jira = app(Jira::class);
 
 ```php
 // Search issues (JQL)
-$search = $jira->issues()->index(['jql' => 'project = CBE4 AND status = "To Do"']);
+$search = $jira->issues()->index(['jql' => 'project = PROJ AND status = "To Do"']);
 foreach ($search->getIssues() as $issue) {
     echo $issue->getKey() . ': ' . $issue->getSummary();
 }
 
 // Get a single issue
-$issue = $jira->issues()->show('CBE4-123');
-echo $issue->getLink(); // https://yourcompany.atlassian.net/browse/CBE4-123
+$issue = $jira->issues()->show('PROJ-123');
+echo $issue->getLink(); // https://yourcompany.atlassian.net/browse/PROJ-123
 
 // Create an issue
 use CaptureHigherEd\LaravelJira\Models\Issue;
 
 $payload = Issue::make()
-    ->setProjectByKey('CBE4')
+    ->setProjectByKey('PROJ')
     ->setIssueTypeByName('Bug')
     ->setSummary('Something is broken')
     ->setDescription([/* Atlassian Document Format content */]);
@@ -70,48 +70,48 @@ $payload = Issue::make()
 $created = $jira->issues()->create($payload->toArray());
 
 // Update an issue
-$jira->issues()->update('CBE4-123', ['fields' => ['summary' => 'Updated title']]);
+$jira->issues()->update('PROJ-123', ['fields' => ['summary' => 'Updated title']]);
 
 // Delete an issue
-$jira->issues()->delete('CBE4-123');
+$jira->issues()->delete('PROJ-123');
 ```
 
 #### Transitions
 
 ```php
 // Get available transitions
-$transitions = $jira->issues()->getTransitions('CBE4-123');
+$transitions = $jira->issues()->getTransitions('PROJ-123');
 foreach ($transitions->getTransitions() as $transition) {
     echo $transition->getId() . ': ' . $transition->getName();
 }
 
 // Transition an issue to a new status
-$jira->issues()->transition('CBE4-123', ['transition' => ['id' => '31']]);
+$jira->issues()->transition('PROJ-123', ['transition' => ['id' => '31']]);
 ```
 
 #### Assignment
 
 ```php
-$jira->issues()->assign('CBE4-123', $accountId);
+$jira->issues()->assign('PROJ-123', $accountId);
 ```
 
 #### Watchers
 
 ```php
 // Get watchers
-$watchers = $jira->issues()->getWatchers('CBE4-123');
+$watchers = $jira->issues()->getWatchers('PROJ-123');
 echo $watchers->getWatchCount();
 
 // Add / remove a watcher
-$jira->issues()->addWatcher('CBE4-123', $accountId);
-$jira->issues()->removeWatcher('CBE4-123', $accountId);
+$jira->issues()->addWatcher('PROJ-123', $accountId);
+$jira->issues()->removeWatcher('PROJ-123', $accountId);
 ```
 
 #### Attachments
 
 ```php
 // Attach a file
-$attachments = $jira->issues()->attach('CBE4-123', [
+$attachments = $jira->issues()->attach('PROJ-123', [
     ['name' => 'file', 'contents' => fopen('/path/to/file.pdf', 'r'), 'filename' => 'file.pdf']
 ]);
 ```
@@ -120,13 +120,13 @@ $attachments = $jira->issues()->attach('CBE4-123', [
 
 ```php
 // Get issue types available for a project
-$issueTypes = $jira->issues()->getCreateMetaIssueTypes('CBE4');
+$issueTypes = $jira->issues()->getCreateMetaIssueTypes('PROJ');
 foreach ($issueTypes->getIssueTypes() as $type) {
     echo $type->getId() . ': ' . $type->getName();
 }
 
 // Get field metadata for a project + issue type
-$fields = $jira->issues()->getCreateMetaFields('CBE4', '10001');
+$fields = $jira->issues()->getCreateMetaFields('PROJ', '10001');
 foreach ($fields->getFields() as $field) {
     echo $field->getFieldId() . ': ' . $field->getName();
 }
@@ -144,7 +144,7 @@ foreach ($projects->getProjects() as $project) {
 }
 
 // Get a single project
-$project = $jira->projects()->show('CBE4');
+$project = $jira->projects()->show('PROJ');
 echo $project->getId();
 ```
 
@@ -154,29 +154,29 @@ echo $project->getId();
 
 ```php
 // Get all comments for an issue
-$comments = $jira->comments()->index('CBE4-123');
+$comments = $jira->comments()->index('PROJ-123');
 foreach ($comments->getComments() as $comment) {
     echo $comment->getId();
 }
 
 // Get a single comment
-$comment = $jira->comments()->show('CBE4-123', '10001');
+$comment = $jira->comments()->show('PROJ-123', '10001');
 
 // Add a comment
-$comment = $jira->comments()->create('CBE4-123', [
+$comment = $jira->comments()->create('PROJ-123', [
     'body' => ['type' => 'doc', 'version' => 1, 'content' => [
         ['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Hello!']]]
     ]]
 ]);
 
 // Update a comment
-$jira->comments()->update('CBE4-123', '10001', ['body' => [/* updated ADF */]]);
+$jira->comments()->update('PROJ-123', '10001', ['body' => [/* updated ADF */]]);
 
 // Delete a comment
-$jira->comments()->delete('CBE4-123', '10001');
+$jira->comments()->delete('PROJ-123', '10001');
 
 // Shorthand via issues()
-$comment = $jira->issues()->comment('CBE4-123', ['body' => [/* ADF */]]);
+$comment = $jira->issues()->comment('PROJ-123', ['body' => [/* ADF */]]);
 ```
 
 ---
@@ -185,22 +185,22 @@ $comment = $jira->issues()->comment('CBE4-123', ['body' => [/* ADF */]]);
 
 ```php
 // Get all worklogs for an issue
-$worklogs = $jira->worklogs()->index('CBE4-123');
+$worklogs = $jira->worklogs()->index('PROJ-123');
 foreach ($worklogs->getWorklogs() as $worklog) {
     echo $worklog->getTimeSpent();
 }
 
 // Add a worklog
-$worklog = $jira->worklogs()->create('CBE4-123', [
+$worklog = $jira->worklogs()->create('PROJ-123', [
     'timeSpent' => '2h',
     'started' => '2024-01-15T09:00:00.000+0000',
 ]);
 
 // Update a worklog
-$jira->worklogs()->update('CBE4-123', '10001', ['timeSpent' => '3h']);
+$jira->worklogs()->update('PROJ-123', '10001', ['timeSpent' => '3h']);
 
 // Delete a worklog
-$jira->worklogs()->delete('CBE4-123', '10001');
+$jira->worklogs()->delete('PROJ-123', '10001');
 ```
 
 ---
@@ -211,8 +211,8 @@ $jira->worklogs()->delete('CBE4-123', '10001');
 // Link two issues
 $jira->issueLinks()->create([
     'type' => ['name' => 'Blocks'],
-    'inwardIssue' => ['key' => 'CBE4-123'],
-    'outwardIssue' => ['key' => 'CBE4-456'],
+    'inwardIssue' => ['key' => 'PROJ-123'],
+    'outwardIssue' => ['key' => 'PROJ-456'],
 ]);
 
 // Get a link
@@ -298,7 +298,7 @@ Paginated endpoints implement the `Paginated` interface, which exposes `getTotal
 **Single page with manual pagination:**
 
 ```php
-$page = $jira->issues()->index(['jql' => 'project = CBE4', 'maxResults' => 50]);
+$page = $jira->issues()->index(['jql' => 'project = PROJ', 'maxResults' => 50]);
 
 echo $page->getTotal();      // total matching issues
 echo $page->hasMore();       // true if more pages exist
@@ -311,35 +311,35 @@ echo $page->getNextStartAt(); // offset to pass for the next page
 
 ```php
 // Paginate all search results
-foreach ($jira->issues()->paginate(['jql' => 'project = CBE4']) as $page) {
+foreach ($jira->issues()->paginate(['jql' => 'project = PROJ']) as $page) {
     foreach ($page->getIssues() as $issue) {
         // process issue
     }
 }
 
 // Paginate comments on an issue
-foreach ($jira->comments()->paginate('CBE4-123') as $page) {
+foreach ($jira->comments()->paginate('PROJ-123') as $page) {
     foreach ($page->getComments() as $comment) {
         // process comment
     }
 }
 
 // Paginate worklogs on an issue
-foreach ($jira->worklogs()->paginate('CBE4-123') as $page) {
+foreach ($jira->worklogs()->paginate('PROJ-123') as $page) {
     foreach ($page->getWorklogs() as $worklog) {
         // process worklog
     }
 }
 
 // Paginate create-meta issue types
-foreach ($jira->issues()->paginateCreateMetaIssueTypes('CBE4') as $page) {
+foreach ($jira->issues()->paginateCreateMetaIssueTypes('PROJ') as $page) {
     foreach ($page->getIssueTypes() as $type) {
         // process issue type
     }
 }
 
 // Paginate create-meta fields for a specific issue type
-foreach ($jira->issues()->paginateCreateMetaFields('CBE4', '10001') as $page) {
+foreach ($jira->issues()->paginateCreateMetaFields('PROJ', '10001') as $page) {
     foreach ($page->getFields() as $field) {
         // process field
     }
@@ -349,9 +349,9 @@ foreach ($jira->issues()->paginateCreateMetaFields('CBE4', '10001') as $page) {
 You can also break early to avoid fetching unnecessary pages:
 
 ```php
-foreach ($jira->issues()->paginate(['jql' => 'project = CBE4']) as $page) {
+foreach ($jira->issues()->paginate(['jql' => 'project = PROJ']) as $page) {
     foreach ($page->getIssues() as $issue) {
-        if ($issue->getKey() === 'CBE4-42') {
+        if ($issue->getKey() === 'PROJ-42') {
             break 2;
         }
     }
