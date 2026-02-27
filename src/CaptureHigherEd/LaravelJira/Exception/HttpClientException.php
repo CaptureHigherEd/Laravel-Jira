@@ -4,7 +4,7 @@ namespace CaptureHigherEd\LaravelJira\Exception;
 
 use Psr\Http\Message\ResponseInterface;
 
-final class HttpClientException extends \RuntimeException
+final class HttpClientException extends \RuntimeException implements JiraException
 {
     private ?ResponseInterface $response;
 
@@ -96,17 +96,6 @@ final class HttpClientException extends \RuntimeException
         $message = sprintf("Unprocessable entity. Jira validation failed.\n\n%s", $validationMessage);
 
         return new self($message, 422, $response);
-    }
-
-    public static function serverError(ResponseInterface $response): self
-    {
-        $statusCode = $response->getStatusCode();
-
-        return new self(
-            sprintf('Jira server error (HTTP %d). Please try again later.', $statusCode),
-            $statusCode,
-            $response
-        );
     }
 
     public static function forbidden(ResponseInterface $response): self

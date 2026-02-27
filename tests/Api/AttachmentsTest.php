@@ -3,6 +3,7 @@
 namespace CaptureHigherEd\LaravelJira\Tests\Api;
 
 use CaptureHigherEd\LaravelJira\Api\Attachments;
+use CaptureHigherEd\LaravelJira\Exception\InvalidArgumentException;
 use CaptureHigherEd\LaravelJira\Models\Attachment;
 use CaptureHigherEd\LaravelJira\Tests\Concerns\MocksHttpResponses;
 use PHPUnit\Framework\TestCase;
@@ -23,8 +24,7 @@ class AttachmentsTest extends TestCase
             'created' => '2024-01-01T09:00:00.000+0000',
             'thumbnail' => '',
         ]);
-        $client = $this->mockClientExpecting('GET', 'attachment/10001', ['query' => []], $response);
-        $api = new Attachments($client);
+        $api = new Attachments($this->makeConfig($response));
 
         $result = $api->show('10001');
 
@@ -36,8 +36,7 @@ class AttachmentsTest extends TestCase
     public function test_delete(): void
     {
         $response = $this->noContentResponse();
-        $client = $this->mockClientExpecting('DELETE', 'attachment/10001', ['query' => []], $response);
-        $api = new Attachments($client);
+        $api = new Attachments($this->makeConfig($response));
 
         $result = $api->delete('10001');
 
@@ -48,11 +47,29 @@ class AttachmentsTest extends TestCase
     {
         $meta = ['enabled' => true, 'uploadLimit' => 10485760];
         $response = $this->jsonResponse($meta);
-        $client = $this->mockClientExpecting('GET', 'attachment/meta', ['query' => []], $response);
-        $api = new Attachments($client);
+        $api = new Attachments($this->makeConfig($response));
 
         $result = $api->getMeta();
 
         $this->assertSame($meta, $result, 'Attachments::getMeta() should return the raw metadata array from the API response');
+    }
+
+    // ── Validation ────────────────────────────────────────────────────────
+
+    private function makeApi(): Attachments
+    {
+        return new Attachments($this->makeConfig($this->jsonResponse([])));
+    }
+
+    public function test_show_throws_on_empty_attachment_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->show('');
+    }
+
+    public function test_delete_throws_on_empty_attachment_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->delete('');
     }
 }

@@ -166,19 +166,6 @@ class HttpClientExceptionTest extends TestCase
         $this->assertStringContainsString('Validation failed', $e->getMessage(), 'unprocessableEntity() factory should include the raw body text when the response is not JSON');
     }
 
-    // ── Factory: serverError ─────────────────────────────────────────────
-
-    public function test_server_error_includes_status_code(): void
-    {
-        foreach ([500, 502, 503] as $status) {
-            $response = $this->plainErrorResponse($status, '');
-            $e = HttpClientException::serverError($response);
-
-            $this->assertSame($status, $e->getCode(), "serverError() factory should set the exception code to $status");
-            $this->assertStringContainsString((string) $status, $e->getMessage(), "serverError() factory should include the HTTP status code $status in the exception message");
-        }
-    }
-
     // ── Factory: unknown ─────────────────────────────────────────────────
 
     public function test_unknown_error(): void

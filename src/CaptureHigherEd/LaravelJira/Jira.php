@@ -2,16 +2,16 @@
 
 namespace CaptureHigherEd\LaravelJira;
 
-use GuzzleHttp\ClientInterface;
+use CaptureHigherEd\LaravelJira\Http\HttpClientConfig;
 
 class Jira
 {
-    private ClientInterface $httpClient;
+    private HttpClientConfig $config;
 
     public function __construct(
         HttpClientConnector $httpClient
     ) {
-        $this->httpClient = $httpClient->createClient();
+        $this->config = $httpClient->createConfig();
     }
 
     /**
@@ -30,41 +30,41 @@ class Jira
 
     public function issues(): Api\Issues
     {
-        return new Api\Issues($this->httpClient);
+        return new Api\Issues($this->config);
     }
 
     public function fields(): Api\Fields
     {
-        return new Api\Fields($this->httpClient);
+        return new Api\Fields($this->config);
     }
 
     public function users(): Api\Users
     {
-        return new Api\Users($this->httpClient);
+        return new Api\Users($this->config);
     }
 
     public function projects(): Api\Projects
     {
-        return new Api\Projects($this->httpClient);
+        return new Api\Projects($this->config);
     }
 
     public function comments(): Api\Comments
     {
-        return new Api\Comments($this->httpClient);
+        return new Api\Comments($this->config);
     }
 
     public function worklogs(): Api\Worklogs
     {
-        return new Api\Worklogs($this->httpClient);
+        return new Api\Worklogs($this->config);
     }
 
     public function issueLinks(): Api\IssueLinks
     {
-        return new Api\IssueLinks($this->httpClient);
+        return new Api\IssueLinks($this->config);
     }
 
     public function attachments(): Api\Attachments
     {
-        return new Api\Attachments($this->httpClient);
+        return new Api\Attachments($this->config);
     }
 }

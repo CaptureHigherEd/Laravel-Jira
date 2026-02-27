@@ -3,6 +3,7 @@
 namespace CaptureHigherEd\LaravelJira\Tests\Api;
 
 use CaptureHigherEd\LaravelJira\Api\Comments;
+use CaptureHigherEd\LaravelJira\Exception\InvalidArgumentException;
 use CaptureHigherEd\LaravelJira\Models\Comment;
 use CaptureHigherEd\LaravelJira\Models\Comments as ModelsComments;
 use CaptureHigherEd\LaravelJira\Tests\Concerns\MocksHttpResponses;
@@ -22,8 +23,7 @@ class CommentsTest extends TestCase
             'maxResults' => 50,
             'startAt' => 0,
         ]);
-        $client = $this->mockClientExpecting('GET', 'issue/KEY-1/comment', ['query' => []], $response);
-        $api = new Comments($client);
+        $api = new Comments($this->makeConfig($response));
 
         $result = $api->index('KEY-1');
 
@@ -35,8 +35,7 @@ class CommentsTest extends TestCase
     public function test_show(): void
     {
         $response = $this->jsonResponse(['id' => '42', 'body' => [], 'created' => '', 'updated' => '', 'self' => '', 'jsdPublic' => true, 'visibility' => []]);
-        $client = $this->mockClientExpecting('GET', 'issue/KEY-1/comment/42', ['query' => []], $response);
-        $api = new Comments($client);
+        $api = new Comments($this->makeConfig($response));
 
         $result = $api->show('KEY-1', '42');
 
@@ -47,8 +46,7 @@ class CommentsTest extends TestCase
     public function test_create(): void
     {
         $response = $this->jsonResponse(['id' => '100', 'body' => ['type' => 'doc'], 'created' => '', 'updated' => '', 'self' => '', 'jsdPublic' => true, 'visibility' => []]);
-        $client = $this->mockClientExpecting('POST', 'issue/KEY-1/comment', ['json' => ['body' => ['type' => 'doc']]], $response);
-        $api = new Comments($client);
+        $api = new Comments($this->makeConfig($response));
 
         $result = $api->create('KEY-1', ['body' => ['type' => 'doc']]);
 
@@ -59,8 +57,7 @@ class CommentsTest extends TestCase
     public function test_update(): void
     {
         $response = $this->jsonResponse(['id' => '42', 'body' => ['type' => 'doc'], 'created' => '', 'updated' => '', 'self' => '', 'jsdPublic' => true, 'visibility' => []]);
-        $client = $this->mockClientExpecting('PUT', 'issue/KEY-1/comment/42', ['json' => ['body' => ['type' => 'doc']]], $response);
-        $api = new Comments($client);
+        $api = new Comments($this->makeConfig($response));
 
         $result = $api->update('KEY-1', '42', ['body' => ['type' => 'doc']]);
 
@@ -71,8 +68,7 @@ class CommentsTest extends TestCase
     public function test_delete(): void
     {
         $response = $this->noContentResponse();
-        $client = $this->mockClientExpecting('DELETE', 'issue/KEY-1/comment/42', ['query' => []], $response);
-        $api = new Comments($client);
+        $api = new Comments($this->makeConfig($response));
 
         $result = $api->delete('KEY-1', '42');
 
@@ -83,13 +79,73 @@ class CommentsTest extends TestCase
     {
         $page1 = $this->jsonResponse(['comments' => [], 'total' => 2, 'maxResults' => 1, 'startAt' => 0]);
         $page2 = $this->jsonResponse(['comments' => [], 'total' => 2, 'maxResults' => 1, 'startAt' => 1]);
-        $client = $this->mockClientWithResponses([$page1, $page2]);
-        $api = new Comments($client);
+        $api = new Comments($this->makeConfigWithResponses([$page1, $page2]));
 
         $pages = iterator_to_array($api->paginate('KEY-1'));
 
         $this->assertCount(2, $pages, 'Comments::paginate() should yield one page per HTTP response');
         $this->assertInstanceOf(ModelsComments::class, $pages[0], 'Each yielded value should be a ModelsComments instance');
         $this->assertSame(2, $pages[0]->getTotal(), 'Total should be hydrated from the first page response');
+    }
+
+    // ── Validation ────────────────────────────────────────────────────────
+
+    private function makeApi(): Comments
+    {
+        return new Comments($this->makeConfig($this->jsonResponse([])));
+    }
+
+    public function test_index_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->index('');
+    }
+
+    public function test_show_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->show('', '42');
+    }
+
+    public function test_show_throws_on_empty_comment_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->show('KEY-1', '');
+    }
+
+    public function test_create_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->create('');
+    }
+
+    public function test_update_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->update('', '42');
+    }
+
+    public function test_update_throws_on_empty_comment_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->update('KEY-1', '');
+    }
+
+    public function test_delete_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->delete('', '42');
+    }
+
+    public function test_delete_throws_on_empty_comment_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->delete('KEY-1', '');
+    }
+
+    public function test_paginate_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        iterator_to_array($this->makeApi()->paginate(''));
     }
 }

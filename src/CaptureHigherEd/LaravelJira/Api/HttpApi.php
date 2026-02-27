@@ -3,66 +3,94 @@
 namespace CaptureHigherEd\LaravelJira\Api;
 
 use CaptureHigherEd\LaravelJira\Exception\HttpClientException;
+use CaptureHigherEd\LaravelJira\Exception\HttpServerException;
+use CaptureHigherEd\LaravelJira\Http\HttpClientConfig;
 use CaptureHigherEd\LaravelJira\Models\ApiResponse;
 use CaptureHigherEd\LaravelJira\Models\Paginated;
-use GuzzleHttp\ClientInterface;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 abstract class HttpApi
 {
-    protected ClientInterface $httpClient;
+    protected ?ResponseInterface $lastResponse = null;
 
-    public function __construct(ClientInterface $httpClient)
+    public function __construct(protected HttpClientConfig $config) {}
+
+    public function getLastResponse(): ?ResponseInterface
     {
-        $this->httpClient = $httpClient;
+        return $this->lastResponse;
     }
 
     /**
-     * @param  string  $path  Relative API path
      * @param  array<string, mixed>  $parameters  Query string parameters
      */
     protected function httpGet(string $path, array $parameters = []): ResponseInterface
     {
-        return $this->httpClient->request('GET', $path, ['query' => $parameters]);
+        $request = $this->applyDefaultHeaders(
+            $this->config->requestBuilder->create('GET', $this->buildUri($path, $parameters))
+        );
+
+        return $this->lastResponse = $this->config->httpClient->sendRequest($request);
     }
 
     /**
-     * @param  string  $path  Relative API path
      * @param  array<string, mixed>  $parameters  JSON request body
      */
     protected function httpPost(string $path, array $parameters = []): ResponseInterface
     {
-        return $this->httpClient->request('POST', $path, ['json' => $parameters]);
+        $request = $this->applyDefaultHeaders(
+            $this->config->requestBuilder->createWithJson('POST', $this->buildUri($path), $parameters)
+        );
+
+        return $this->lastResponse = $this->config->httpClient->sendRequest($request);
     }
 
     /**
-     * @param  string  $path  Relative API path
-     * @param  array<int, array<string, mixed>>  $multipart  Guzzle multipart form data
+     * @param  array<int, array<string, mixed>>  $multipart  Multipart form data parts
      */
     protected function httpPostWithAttachments(string $path, array $multipart = []): ResponseInterface
     {
-        return $this->httpClient->request('POST', $path, ['multipart' => $multipart, 'headers' => [
-            'Accept' => 'application/json',
-            'X-Atlassian-Token' => 'no-check',
-        ]]);
+        $request = $this->applyDefaultHeaders(
+            $this->config->requestBuilder->createWithMultipart('POST', $this->buildUri($path), $multipart)
+        )->withHeader('X-Atlassian-Token', 'no-check');
+
+        return $this->lastResponse = $this->config->httpClient->sendRequest($request);
     }
 
     /**
-     * @param  string  $path  Relative API path
+     * POST with a raw string body (e.g. Jira's addWatcher quirk requires a JSON-encoded string).
+     */
+    protected function httpPostRaw(string $path, string $body, string $contentType = 'application/json'): ResponseInterface
+    {
+        $request = $this->applyDefaultHeaders(
+            $this->config->requestBuilder->createWithRawBody('POST', $this->buildUri($path), $body, $contentType)
+        );
+
+        return $this->lastResponse = $this->config->httpClient->sendRequest($request);
+    }
+
+    /**
      * @param  array<string, mixed>  $parameters  JSON request body
      */
     protected function httpPut(string $path, array $parameters = []): ResponseInterface
     {
-        return $this->httpClient->request('PUT', $path, ['json' => $parameters]);
+        $request = $this->applyDefaultHeaders(
+            $this->config->requestBuilder->createWithJson('PUT', $this->buildUri($path), $parameters)
+        );
+
+        return $this->lastResponse = $this->config->httpClient->sendRequest($request);
     }
 
     /**
-     * @param  string  $path  Relative API path
      * @param  array<string, mixed>  $parameters  Query string parameters
      */
     protected function httpDelete(string $path, array $parameters = []): ResponseInterface
     {
-        return $this->httpClient->request('DELETE', $path, ['query' => $parameters]);
+        $request = $this->applyDefaultHeaders(
+            $this->config->requestBuilder->create('DELETE', $this->buildUri($path, $parameters))
+        );
+
+        return $this->lastResponse = $this->config->httpClient->sendRequest($request);
     }
 
     protected function handleErrors(ResponseInterface $response): void
@@ -91,8 +119,11 @@ abstract class HttpApi
             case 500:
             case 502:
             case 503:
-                throw HttpClientException::serverError($response);
+                throw HttpServerException::serverError($response);
             default:
+                if ($statusCode >= 500) {
+                    throw HttpServerException::serverError($response);
+                }
                 throw HttpClientException::unknown($response);
         }
     }
@@ -123,30 +154,40 @@ abstract class HttpApi
 
     protected function hydrateResponse(ResponseInterface $response, ?string $class = null): mixed
     {
-        $statusCode = $response->getStatusCode();
-
-        if (! in_array($statusCode, [200, 201, 202, 204], true)) {
+        if (! in_array($response->getStatusCode(), [200, 201, 202, 204], true)) {
             $this->handleErrors($response);
         }
 
-        if ($statusCode === 204) {
-            return $class ? $class::make([]) : [];
+        return $this->config->hydrator->hydrate($response, $class);
+    }
+
+    /**
+     * Build a full URI from a relative path and optional query parameters.
+     *
+     * @param  array<string, mixed>  $parameters
+     */
+    private function buildUri(string $path, array $parameters = []): string
+    {
+        $uri = rtrim($this->config->baseUri, '/').'/'.$path;
+
+        if (! empty($parameters)) {
+            $uri .= '?'.http_build_query($parameters);
         }
 
-        $body = (string) $response->getBody();
+        return $uri;
+    }
 
-        if ($body === '') {
-            return $class ? $class::make([]) : [];
+    /**
+     * Apply default headers to a request without overriding headers already set on the request.
+     */
+    private function applyDefaultHeaders(RequestInterface $request): RequestInterface
+    {
+        foreach ($this->config->defaultHeaders as $name => $value) {
+            if (! $request->hasHeader($name)) {
+                $request = $request->withHeader($name, $value);
+            }
         }
 
-        $data = json_decode($body, true) ?? [];
-
-        if (! $class) {
-            return $data;
-        }
-
-        $object = call_user_func([$class, 'make'], $data);
-
-        return $object;
+        return $request;
     }
 }

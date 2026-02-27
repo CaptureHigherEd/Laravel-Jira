@@ -3,6 +3,7 @@
 namespace CaptureHigherEd\LaravelJira\Tests\Api;
 
 use CaptureHigherEd\LaravelJira\Api\Worklogs;
+use CaptureHigherEd\LaravelJira\Exception\InvalidArgumentException;
 use CaptureHigherEd\LaravelJira\Models\Worklog;
 use CaptureHigherEd\LaravelJira\Models\Worklogs as ModelsWorklogs;
 use CaptureHigherEd\LaravelJira\Tests\Concerns\MocksHttpResponses;
@@ -22,8 +23,7 @@ class WorklogsTest extends TestCase
             'maxResults' => 20,
             'startAt' => 0,
         ]);
-        $client = $this->mockClientExpecting('GET', 'issue/KEY-1/worklog', ['query' => []], $response);
-        $api = new Worklogs($client);
+        $api = new Worklogs($this->makeConfig($response));
 
         $result = $api->index('KEY-1');
 
@@ -36,8 +36,7 @@ class WorklogsTest extends TestCase
     {
         $worklogData = ['id' => '200', 'self' => '', 'comment' => [], 'started' => '2024-01-01T09:00:00.000+0000', 'timeSpent' => '2h', 'timeSpentSeconds' => 7200, 'issueId' => '10001', 'created' => '', 'updated' => ''];
         $response = $this->mockResponse(201, $worklogData);
-        $client = $this->mockClientExpecting('POST', 'issue/KEY-1/worklog', ['json' => ['timeSpent' => '2h', 'started' => '2024-01-01T09:00:00.000+0000']], $response);
-        $api = new Worklogs($client);
+        $api = new Worklogs($this->makeConfig($response));
 
         $result = $api->create('KEY-1', ['timeSpent' => '2h', 'started' => '2024-01-01T09:00:00.000+0000']);
 
@@ -49,8 +48,7 @@ class WorklogsTest extends TestCase
     {
         $worklogData = ['id' => '200', 'self' => '', 'comment' => [], 'started' => '', 'timeSpent' => '3h', 'timeSpentSeconds' => 10800, 'issueId' => '10001', 'created' => '', 'updated' => ''];
         $response = $this->jsonResponse($worklogData);
-        $client = $this->mockClientExpecting('PUT', 'issue/KEY-1/worklog/200', ['json' => ['timeSpent' => '3h']], $response);
-        $api = new Worklogs($client);
+        $api = new Worklogs($this->makeConfig($response));
 
         $result = $api->update('KEY-1', '200', ['timeSpent' => '3h']);
 
@@ -61,8 +59,7 @@ class WorklogsTest extends TestCase
     public function test_delete(): void
     {
         $response = $this->noContentResponse();
-        $client = $this->mockClientExpecting('DELETE', 'issue/KEY-1/worklog/200', ['query' => []], $response);
-        $api = new Worklogs($client);
+        $api = new Worklogs($this->makeConfig($response));
 
         $result = $api->delete('KEY-1', '200');
 
@@ -73,13 +70,61 @@ class WorklogsTest extends TestCase
     {
         $page1 = $this->jsonResponse(['worklogs' => [], 'total' => 2, 'maxResults' => 1, 'startAt' => 0]);
         $page2 = $this->jsonResponse(['worklogs' => [], 'total' => 2, 'maxResults' => 1, 'startAt' => 1]);
-        $client = $this->mockClientWithResponses([$page1, $page2]);
-        $api = new Worklogs($client);
+        $api = new Worklogs($this->makeConfigWithResponses([$page1, $page2]));
 
         $pages = iterator_to_array($api->paginate('KEY-1'));
 
         $this->assertCount(2, $pages, 'Worklogs::paginate() should yield one page per HTTP response');
         $this->assertInstanceOf(ModelsWorklogs::class, $pages[0], 'Each yielded value should be a ModelsWorklogs instance');
         $this->assertSame(2, $pages[0]->getTotal(), 'Total should be hydrated from the first page response');
+    }
+
+    // ── Validation ────────────────────────────────────────────────────────
+
+    private function makeApi(): Worklogs
+    {
+        return new Worklogs($this->makeConfig($this->jsonResponse([])));
+    }
+
+    public function test_index_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->index('');
+    }
+
+    public function test_create_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->create('');
+    }
+
+    public function test_update_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->update('', '200');
+    }
+
+    public function test_update_throws_on_empty_worklog_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->update('KEY-1', '');
+    }
+
+    public function test_delete_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->delete('', '200');
+    }
+
+    public function test_delete_throws_on_empty_worklog_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->delete('KEY-1', '');
+    }
+
+    public function test_paginate_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        iterator_to_array($this->makeApi()->paginate(''));
     }
 }
