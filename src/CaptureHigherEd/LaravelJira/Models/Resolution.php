@@ -2,39 +2,26 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class Resolution implements ApiResponse
+final class Resolution extends Model
 {
-    const ID = 'id';
-
-    const NAME = 'name';
-
-    const DESCRIPTION = 'description';
-
-    const SELF = 'self';
-
-    private string $id = '';
-
-    private string $name = '';
-
-    private string $description = '';
-
-    private string $self = '';
-
-    private function __construct() {}
+    private function __construct(
+        private string $id = '',
+        private string $name = '',
+        private string $description = '',
+        private string $self = '',
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data
      */
     public static function make(array $data = []): self
     {
-        $model = new self;
-
-        $model->setId($data[self::ID] ?? '');
-        $model->setName($data[self::NAME] ?? '');
-        $model->setDescription($data[self::DESCRIPTION] ?? '');
-        $model->setSelf($data[self::SELF] ?? '');
-
-        return $model;
+        return new self(
+            id: $data['id'] ?? '',
+            name: $data['name'] ?? '',
+            description: $data['description'] ?? '',
+            self: $data['self'] ?? '',
+        );
     }
 
     public function getId(): string
@@ -91,10 +78,10 @@ final class Resolution implements ApiResponse
     public function toArray(): array
     {
         return [
-            self::ID => $this->id,
-            self::NAME => $this->name,
-            self::DESCRIPTION => $this->description,
-            self::SELF => $this->self,
+            'id' => $this->id,
+            'name' => $this->name,
+            'description' => $this->description,
+            'self' => $this->self,
         ];
     }
 }

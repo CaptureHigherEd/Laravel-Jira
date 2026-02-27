@@ -2,18 +2,14 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class Status extends Model
+final class IssueLinkType extends Model
 {
-    /**
-     * @param  array<string, mixed>  $statusCategory
-     */
     private function __construct(
         private string $id = '',
         private string $name = '',
-        private string $description = '',
-        private string $iconUrl = '',
+        private string $inward = '',
+        private string $outward = '',
         private string $self = '',
-        private array $statusCategory = [],
     ) {}
 
     /**
@@ -24,10 +20,9 @@ final class Status extends Model
         return new self(
             id: $data['id'] ?? '',
             name: $data['name'] ?? '',
-            description: $data['description'] ?? '',
-            iconUrl: $data['iconUrl'] ?? '',
+            inward: $data['inward'] ?? '',
+            outward: $data['outward'] ?? '',
             self: $data['self'] ?? '',
-            statusCategory: $data['statusCategory'] ?? [],
         );
     }
 
@@ -41,27 +36,19 @@ final class Status extends Model
         return $this->name;
     }
 
-    public function getDescription(): string
+    public function getInward(): string
     {
-        return $this->description;
+        return $this->inward;
     }
 
-    public function getIconUrl(): string
+    public function getOutward(): string
     {
-        return $this->iconUrl;
+        return $this->outward;
     }
 
     public function getSelf(): string
     {
         return $this->self;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function getStatusCategory(): array
-    {
-        return $this->statusCategory;
     }
 
     public function setId(string $value): self
@@ -78,16 +65,16 @@ final class Status extends Model
         return $this;
     }
 
-    public function setDescription(string $value): self
+    public function setInward(string $value): self
     {
-        $this->description = $value;
+        $this->inward = $value;
 
         return $this;
     }
 
-    public function setIconUrl(string $value): self
+    public function setOutward(string $value): self
     {
-        $this->iconUrl = $value;
+        $this->outward = $value;
 
         return $this;
     }
@@ -100,16 +87,6 @@ final class Status extends Model
     }
 
     /**
-     * @param  array<string, mixed>  $value
-     */
-    public function setStatusCategory(array $value): self
-    {
-        $this->statusCategory = $value;
-
-        return $this;
-    }
-
-    /**
      * @return array<string, mixed>
      */
     public function toArray(): array
@@ -117,10 +94,9 @@ final class Status extends Model
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'description' => $this->description,
-            'iconUrl' => $this->iconUrl,
+            'inward' => $this->inward,
+            'outward' => $this->outward,
             'self' => $this->self,
-            'statusCategory' => $this->statusCategory,
         ];
     }
 }

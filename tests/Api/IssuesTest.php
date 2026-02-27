@@ -9,6 +9,8 @@ use CaptureHigherEd\LaravelJira\Models\FieldMetas;
 use CaptureHigherEd\LaravelJira\Models\Issue;
 use CaptureHigherEd\LaravelJira\Models\IssueTypes;
 use CaptureHigherEd\LaravelJira\Models\Search;
+use CaptureHigherEd\LaravelJira\Models\Transitions;
+use CaptureHigherEd\LaravelJira\Models\Watchers;
 use CaptureHigherEd\LaravelJira\Tests\Concerns\MocksHttpResponses;
 use PHPUnit\Framework\TestCase;
 
@@ -148,11 +150,98 @@ class IssuesTest extends TestCase
     public function test_delete(): void
     {
         $response = $this->noContentResponse();
-        $client = $this->mockClientExpecting('DELETE', 'issue/KEY-1', [], $response);
+        $client = $this->mockClientExpecting('DELETE', 'issue/KEY-1', ['query' => []], $response);
         $api = new Issues($client);
 
         $result = $api->delete('KEY-1');
 
         $this->assertSame([], $result, 'Issues::delete() should return an empty array for a successful 204 No Content response');
+    }
+
+    // ── Transitions & assignment ───────────────────────────────────────────
+
+    public function test_get_transitions(): void
+    {
+        $response = $this->jsonResponse([
+            'transitions' => [
+                ['id' => '1', 'name' => 'To Do', 'hasScreen' => false, 'isGlobal' => false, 'isInitial' => true, 'isConditional' => false],
+                ['id' => '2', 'name' => 'In Progress', 'hasScreen' => false, 'isGlobal' => true, 'isInitial' => false, 'isConditional' => false],
+            ],
+        ]);
+        $client = $this->mockClientExpecting('GET', 'issue/KEY-1/transitions', ['query' => []], $response);
+        $api = new Issues($client);
+
+        $result = $api->getTransitions('KEY-1');
+
+        $this->assertInstanceOf(Transitions::class, $result, 'Issues::getTransitions() should return a Transitions instance');
+        $this->assertCount(2, $result->getTransitions(), 'Issues::getTransitions() should return the correct number of transitions');
+        $this->assertSame('1', $result->getTransitions()[0]->getId(), 'Issues::getTransitions() should hydrate the transition ID correctly');
+    }
+
+    public function test_transition(): void
+    {
+        $response = $this->noContentResponse();
+        $client = $this->mockClientExpecting('POST', 'issue/KEY-1/transitions', ['json' => ['transition' => ['id' => '5']]], $response);
+        $api = new Issues($client);
+
+        $result = $api->transition('KEY-1', ['transition' => ['id' => '5']]);
+
+        $this->assertSame([], $result, 'Issues::transition() should return an empty array for a successful 204 No Content response');
+    }
+
+    public function test_assign(): void
+    {
+        $response = $this->noContentResponse();
+        $client = $this->mockClientExpecting('PUT', 'issue/KEY-1/assignee', ['json' => ['accountId' => 'u1']], $response);
+        $api = new Issues($client);
+
+        $result = $api->assign('KEY-1', 'u1');
+
+        $this->assertSame([], $result, 'Issues::assign() should return an empty array for a successful 204 No Content response');
+    }
+
+    // ── Watchers ──────────────────────────────────────────────────────────
+
+    public function test_get_watchers(): void
+    {
+        $response = $this->jsonResponse([
+            'self' => 'https://example.atlassian.net/rest/api/3/issue/KEY-1/watchers',
+            'isWatching' => true,
+            'watchCount' => 1,
+            'watchers' => [['accountId' => 'u1', 'displayName' => 'Alice', 'emailAddress' => '', 'active' => true]],
+        ]);
+        $client = $this->mockClientExpecting('GET', 'issue/KEY-1/watchers', ['query' => []], $response);
+        $api = new Issues($client);
+
+        $result = $api->getWatchers('KEY-1');
+
+        $this->assertInstanceOf(Watchers::class, $result, 'Issues::getWatchers() should return a Watchers instance');
+        $this->assertSame(1, $result->getWatchCount(), 'Issues::getWatchers() should hydrate the watch count correctly');
+        $this->assertCount(1, $result->getWatchers(), 'Issues::getWatchers() should hydrate the watchers list correctly');
+    }
+
+    public function test_add_watcher(): void
+    {
+        $response = $this->noContentResponse();
+        $client = $this->mockClientExpecting('POST', 'issue/KEY-1/watchers', [
+            'body' => '"u1"',
+            'headers' => ['Content-Type' => 'application/json'],
+        ], $response);
+        $api = new Issues($client);
+
+        $result = $api->addWatcher('KEY-1', 'u1');
+
+        $this->assertSame([], $result, 'Issues::addWatcher() should return an empty array for a successful 204 No Content response');
+    }
+
+    public function test_remove_watcher(): void
+    {
+        $response = $this->noContentResponse();
+        $client = $this->mockClientExpecting('DELETE', 'issue/KEY-1/watchers', ['query' => ['accountId' => 'u1']], $response);
+        $api = new Issues($client);
+
+        $result = $api->removeWatcher('KEY-1', 'u1');
+
+        $this->assertSame([], $result, 'Issues::removeWatcher() should return an empty array for a successful 204 No Content response');
     }
 }

@@ -56,10 +56,11 @@ abstract class HttpApi
 
     /**
      * @param  string  $path  Relative API path
+     * @param  array<string, mixed>  $parameters  Query string parameters
      */
-    protected function httpDelete(string $path): ResponseInterface
+    protected function httpDelete(string $path, array $parameters = []): ResponseInterface
     {
-        return $this->httpClient->request('DELETE', $path);
+        return $this->httpClient->request('DELETE', $path, ['query' => $parameters]);
     }
 
     protected function handleErrors(ResponseInterface $response): void

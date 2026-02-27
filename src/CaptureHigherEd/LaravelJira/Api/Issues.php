@@ -8,6 +8,8 @@ use CaptureHigherEd\LaravelJira\Models\FieldMetas;
 use CaptureHigherEd\LaravelJira\Models\Issue;
 use CaptureHigherEd\LaravelJira\Models\IssueTypes;
 use CaptureHigherEd\LaravelJira\Models\Search;
+use CaptureHigherEd\LaravelJira\Models\Transitions;
+use CaptureHigherEd\LaravelJira\Models\Watchers;
 
 /**
  * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-group-issues
@@ -79,9 +81,7 @@ class Issues extends HttpApi
      */
     public function comment(string $issueId, array $params = []): Comment
     {
-        $response = $this->httpPost(sprintf('issue/%s/comment', $issueId), $params);
-
-        return $this->hydrateResponse($response, Comment::class);
+        return (new Comments($this->httpClient))->create($issueId, $params);
     }
 
     /**
@@ -156,6 +156,92 @@ class Issues extends HttpApi
     public function delete(string $issueId): array
     {
         $response = $this->httpDelete(sprintf('issue/%s', $issueId));
+
+        return $this->hydrateResponse($response);
+    }
+
+    /**
+     * Get available transitions for an issue
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-transitions-get
+     */
+    public function getTransitions(string $issueId): Transitions
+    {
+        $response = $this->httpGet(sprintf('issue/%s/transitions', $issueId));
+
+        return $this->hydrateResponse($response, Transitions::class);
+    }
+
+    /**
+     * Transition an issue to a new status
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-transitions-post
+     *
+     * @param  array<string, mixed>  $params
+     * @return array<mixed>
+     */
+    public function transition(string $issueId, array $params = []): array
+    {
+        $response = $this->httpPost(sprintf('issue/%s/transitions', $issueId), $params);
+
+        return $this->hydrateResponse($response);
+    }
+
+    /**
+     * Assign an issue to a user
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-assignee-put
+     *
+     * @return array<mixed>
+     */
+    public function assign(string $issueId, string $accountId): array
+    {
+        $response = $this->httpPut(sprintf('issue/%s/assignee', $issueId), ['accountId' => $accountId]);
+
+        return $this->hydrateResponse($response);
+    }
+
+    /**
+     * Get watchers for an issue
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-watchers/#api-rest-api-3-issue-issueidorkey-watchers-get
+     */
+    public function getWatchers(string $issueId): Watchers
+    {
+        $response = $this->httpGet(sprintf('issue/%s/watchers', $issueId));
+
+        return $this->hydrateResponse($response, Watchers::class);
+    }
+
+    /**
+     * Add a watcher to an issue
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-watchers/#api-rest-api-3-issue-issueidorkey-watchers-post
+     *
+     * Jira expects the body to be a JSON-encoded string (e.g. "accountId"), not an object.
+     *
+     * @return array<mixed>
+     */
+    public function addWatcher(string $issueId, string $accountId): array
+    {
+        $response = $this->httpClient->request('POST', sprintf('issue/%s/watchers', $issueId), [
+            'body' => json_encode($accountId),
+            'headers' => ['Content-Type' => 'application/json'],
+        ]);
+
+        return $this->hydrateResponse($response);
+    }
+
+    /**
+     * Remove a watcher from an issue
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-watchers/#api-rest-api-3-issue-issueidorkey-watchers-delete
+     *
+     * @return array<mixed>
+     */
+    public function removeWatcher(string $issueId, string $accountId): array
+    {
+        $response = $this->httpDelete(sprintf('issue/%s/watchers', $issueId), ['accountId' => $accountId]);
 
         return $this->hydrateResponse($response);
     }

@@ -2,10 +2,8 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class IssueTypes implements ApiResponse
+final class IssueTypes extends Model
 {
-    const ISSUE_TYPES = 'issueTypes';
-
     /** @var array<int, IssueType> */
     private array $issueTypes = [];
 
@@ -16,17 +14,12 @@ final class IssueTypes implements ApiResponse
      */
     public static function make(array $data = []): self
     {
-        $issueTypes = [];
-
-        if (isset($data[self::ISSUE_TYPES])) {
-            foreach ($data[self::ISSUE_TYPES] as $item) {
-                $issueTypes[] = IssueType::make($item);
-            }
-        }
-
         $model = new self;
 
-        $model->issueTypes = $issueTypes;
+        $model->issueTypes = array_map(
+            fn (array $item) => IssueType::make($item),
+            $data['issueTypes'] ?? []
+        );
 
         return $model;
     }

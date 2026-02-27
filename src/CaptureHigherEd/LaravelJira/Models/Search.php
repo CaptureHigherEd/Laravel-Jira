@@ -2,10 +2,8 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class Search implements ApiResponse
+final class Search extends Model
 {
-    const ISSUES = 'issues';
-
     /** @var array<int, Issue> */
     private array $issues = [];
 
@@ -16,17 +14,12 @@ final class Search implements ApiResponse
      */
     public static function make(array $data = []): self
     {
-        $issues = [];
-
-        if (isset($data[self::ISSUES])) {
-            foreach ($data[self::ISSUES] as $item) {
-                $issues[] = Issue::make($item);
-            }
-        }
-
         $model = new self;
 
-        $model->issues = $issues;
+        $model->issues = array_map(
+            fn (array $item) => Issue::make($item),
+            $data['issues'] ?? []
+        );
 
         return $model;
     }
@@ -45,7 +38,7 @@ final class Search implements ApiResponse
     public function toArray(): array
     {
         return [
-            self::ISSUES => array_map(fn (Issue $issue) => $issue->toArray(), $this->issues),
+            'issues' => array_map(fn (Issue $issue) => $issue->toArray(), $this->issues),
         ];
     }
 }

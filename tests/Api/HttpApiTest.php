@@ -50,9 +50,9 @@ class HttpApiTest extends TestCase
                 return $this->httpPut($path, $parameters);
             }
 
-            public function callHttpDelete(string $path): ResponseInterface
+            public function callHttpDelete(string $path, array $parameters = []): ResponseInterface
             {
-                return $this->httpDelete($path);
+                return $this->httpDelete($path, $parameters);
             }
 
             public function callHttpPostWithAttachments(string $path, array $multipart = []): ResponseInterface
@@ -212,10 +212,19 @@ class HttpApiTest extends TestCase
     public function test_http_delete_passes_path(): void
     {
         $response = $this->noContentResponse();
-        $client = $this->mockClientExpecting('DELETE', 'issue/KEY-1', [], $response);
+        $client = $this->mockClientExpecting('DELETE', 'issue/KEY-1', ['query' => []], $response);
         $api = $this->makeApi($client);
 
         $api->callHttpDelete('issue/KEY-1');
+    }
+
+    public function test_http_delete_passes_query_params(): void
+    {
+        $response = $this->noContentResponse();
+        $client = $this->mockClientExpecting('DELETE', 'issue/KEY-1/watchers', ['query' => ['accountId' => 'u1']], $response);
+        $api = $this->makeApi($client);
+
+        $api->callHttpDelete('issue/KEY-1/watchers', ['accountId' => 'u1']);
     }
 
     public function test_http_post_with_attachments_passes_multipart_and_headers(): void

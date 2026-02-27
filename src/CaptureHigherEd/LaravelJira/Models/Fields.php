@@ -4,7 +4,7 @@ namespace CaptureHigherEd\LaravelJira\Models;
 
 use CaptureHigherEd\LaravelJira\Exception\CustomFieldDoesNotExistException;
 
-final class Fields implements ApiResponse
+final class Fields extends Model
 {
     /** @var array<int, Field> */
     private array $fields = [];
@@ -16,15 +16,9 @@ final class Fields implements ApiResponse
      */
     public static function make(array $data = []): self
     {
-        $fields = [];
-
-        foreach ($data as $item) {
-            $fields[] = Field::make($item);
-        }
-
         $model = new self;
 
-        $model->fields = $fields;
+        $model->fields = array_values(array_map(fn (array $item) => Field::make($item), $data));
 
         return $model;
     }

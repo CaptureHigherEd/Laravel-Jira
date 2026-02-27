@@ -2,10 +2,8 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class FieldMetas implements ApiResponse
+final class FieldMetas extends Model
 {
-    const FIELDS = 'fields';
-
     /** @var array<int, FieldMeta> */
     private array $fields = [];
 
@@ -16,17 +14,12 @@ final class FieldMetas implements ApiResponse
      */
     public static function make(array $data = []): self
     {
-        $fields = [];
-
-        if (isset($data[self::FIELDS])) {
-            foreach ($data[self::FIELDS] as $item) {
-                $fields[] = FieldMeta::make($item);
-            }
-        }
-
         $model = new self;
 
-        $model->fields = $fields;
+        $model->fields = array_map(
+            fn (array $item) => FieldMeta::make($item),
+            $data['fields'] ?? []
+        );
 
         return $model;
     }
