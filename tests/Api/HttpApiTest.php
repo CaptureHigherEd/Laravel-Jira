@@ -6,11 +6,11 @@ use CaptureHigherEd\LaravelJira\Api\HttpApi;
 use CaptureHigherEd\LaravelJira\Exception\HttpClientException;
 use CaptureHigherEd\LaravelJira\Exception\HttpServerException;
 use CaptureHigherEd\LaravelJira\Exception\HydrationException;
+use CaptureHigherEd\LaravelJira\Http\HttpClientConfig;
 use CaptureHigherEd\LaravelJira\Models\ApiResponse;
 use CaptureHigherEd\LaravelJira\Models\Paginated;
 use CaptureHigherEd\LaravelJira\Models\Search;
 use CaptureHigherEd\LaravelJira\Tests\Concerns\MocksHttpResponses;
-use GuzzleHttp\ClientInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 
@@ -18,16 +18,16 @@ class HttpApiTest extends TestCase
 {
     use MocksHttpResponses;
 
-    /** @return HttpApi&object{callHydrateResponse: callable, callHandleErrors: callable, callHttpGet: callable, callHttpPost: callable, callHttpPut: callable, callHttpDelete: callable, callHttpPostWithAttachments: callable} */
+    /** @return HttpApi&object{callHydrateResponse: callable, callHandleErrors: callable, callHttpGet: callable, callHttpPost: callable, callHttpPut: callable, callHttpDelete: callable, callHttpPostWithAttachments: callable, callHttpPostRaw: callable} */
     private function makeApiWithResponse(ResponseInterface $response): object
     {
-        return $this->makeApi($this->mockClient($response));
+        return $this->makeApi($this->makeConfig($response));
     }
 
-    /** @return HttpApi&object{callHydrateResponse: callable, callHandleErrors: callable, callHttpGet: callable, callHttpPost: callable, callHttpPut: callable, callHttpDelete: callable, callHttpPostWithAttachments: callable} */
-    private function makeApi(ClientInterface $client): object
+    /** @return HttpApi&object{callHydrateResponse: callable, callHandleErrors: callable, callHttpGet: callable, callHttpPost: callable, callHttpPut: callable, callHttpDelete: callable, callHttpPostWithAttachments: callable, callHttpPostRaw: callable} */
+    private function makeApi(HttpClientConfig $config): object
     {
-        return new class($client) extends HttpApi
+        return new class($config) extends HttpApi
         {
             public function callHydrateResponse(ResponseInterface $response, ?string $class = null): mixed
             {
@@ -62,6 +62,11 @@ class HttpApiTest extends TestCase
             public function callHttpPostWithAttachments(string $path, array $multipart = []): ResponseInterface
             {
                 return $this->httpPostWithAttachments($path, $multipart);
+            }
+
+            public function callHttpPostRaw(string $path, string $body, string $contentType = 'application/json'): ResponseInterface
+            {
+                return $this->httpPostRaw($path, $body, $contentType);
             }
 
             /**
@@ -237,65 +242,65 @@ class HttpApiTest extends TestCase
 
     // ── HTTP verb delegation ──────────────────────────────────────────────
 
-    public function test_http_get_passes_query(): void
+    public function test_http_get_returns_response(): void
     {
         $response = $this->jsonResponse([]);
-        $client = $this->mockClientExpecting('GET', 'search', ['query' => ['jql' => 'project=CBE4']], $response);
-        $api = $this->makeApi($client);
+        $api = $this->makeApiWithResponse($response);
 
-        $api->callHttpGet('search', ['jql' => 'project=CBE4']);
+        $result = $api->callHttpGet('search', ['jql' => 'project=CBE4']);
+
+        $this->assertSame($response, $result, 'httpGet() should return the PSR-7 response from sendRequest()');
     }
 
-    public function test_http_post_passes_json(): void
+    public function test_http_post_returns_response(): void
     {
         $response = $this->jsonResponse(['id' => '1', 'key' => 'KEY-1', 'fields' => []]);
-        $client = $this->mockClientExpecting('POST', 'issue', ['json' => ['fields' => ['summary' => 'Test']]], $response);
-        $api = $this->makeApi($client);
+        $api = $this->makeApiWithResponse($response);
 
-        $api->callHttpPost('issue', ['fields' => ['summary' => 'Test']]);
+        $result = $api->callHttpPost('issue', ['fields' => ['summary' => 'Test']]);
+
+        $this->assertSame($response, $result, 'httpPost() should return the PSR-7 response from sendRequest()');
     }
 
-    public function test_http_put_passes_json(): void
+    public function test_http_put_returns_response(): void
     {
         $response = $this->jsonResponse(['id' => '1', 'key' => 'KEY-1', 'fields' => []]);
-        $client = $this->mockClientExpecting('PUT', 'issue/KEY-1', ['json' => ['fields' => ['summary' => 'Updated']]], $response);
-        $api = $this->makeApi($client);
+        $api = $this->makeApiWithResponse($response);
 
-        $api->callHttpPut('issue/KEY-1', ['fields' => ['summary' => 'Updated']]);
+        $result = $api->callHttpPut('issue/KEY-1', ['fields' => ['summary' => 'Updated']]);
+
+        $this->assertSame($response, $result, 'httpPut() should return the PSR-7 response from sendRequest()');
     }
 
-    public function test_http_delete_passes_path(): void
+    public function test_http_delete_returns_response(): void
     {
         $response = $this->noContentResponse();
-        $client = $this->mockClientExpecting('DELETE', 'issue/KEY-1', ['query' => []], $response);
-        $api = $this->makeApi($client);
+        $api = $this->makeApiWithResponse($response);
 
-        $api->callHttpDelete('issue/KEY-1');
+        $result = $api->callHttpDelete('issue/KEY-1');
+
+        $this->assertSame($response, $result, 'httpDelete() should return the PSR-7 response from sendRequest()');
     }
 
-    public function test_http_delete_passes_query_params(): void
-    {
-        $response = $this->noContentResponse();
-        $client = $this->mockClientExpecting('DELETE', 'issue/KEY-1/watchers', ['query' => ['accountId' => 'u1']], $response);
-        $api = $this->makeApi($client);
-
-        $api->callHttpDelete('issue/KEY-1/watchers', ['accountId' => 'u1']);
-    }
-
-    public function test_http_post_with_attachments_passes_multipart_and_headers(): void
+    public function test_http_post_with_attachments_returns_response(): void
     {
         $response = $this->jsonResponse([]);
+        $api = $this->makeApiWithResponse($response);
         $multipart = [['name' => 'file', 'contents' => 'file-data', 'filename' => 'test.txt']];
-        $client = $this->mockClientExpecting('POST', 'issue/KEY-1/attachments', [
-            'multipart' => $multipart,
-            'headers' => [
-                'Accept' => 'application/json',
-                'X-Atlassian-Token' => 'no-check',
-            ],
-        ], $response);
-        $api = $this->makeApi($client);
 
-        $api->callHttpPostWithAttachments('issue/KEY-1/attachments', $multipart);
+        $result = $api->callHttpPostWithAttachments('issue/KEY-1/attachments', $multipart);
+
+        $this->assertSame($response, $result, 'httpPostWithAttachments() should return the PSR-7 response from sendRequest()');
+    }
+
+    public function test_http_post_raw_returns_response(): void
+    {
+        $response = $this->noContentResponse();
+        $api = $this->makeApiWithResponse($response);
+
+        $result = $api->callHttpPostRaw('issue/KEY-1/watchers', '"u1"');
+
+        $this->assertSame($response, $result, 'httpPostRaw() should return the PSR-7 response from sendRequest()');
     }
 
     // ── paginateGet ───────────────────────────────────────────────────────
@@ -303,8 +308,8 @@ class HttpApiTest extends TestCase
     public function test_paginate_get_single_page(): void
     {
         $response = $this->jsonResponse(['issues' => [], 'total' => 3, 'maxResults' => 50, 'startAt' => 0]);
-        $client = $this->mockClientWithResponses([$response]);
-        $api = $this->makeApi($client);
+        $config = $this->makeConfigWithResponses([$response]);
+        $api = $this->makeApi($config);
 
         $pages = iterator_to_array($api->callPaginateGet('search/jql', [], Search::class));
 
@@ -318,8 +323,8 @@ class HttpApiTest extends TestCase
         $page1 = $this->jsonResponse(['issues' => [], 'total' => 3, 'maxResults' => 1, 'startAt' => 0]);
         $page2 = $this->jsonResponse(['issues' => [], 'total' => 3, 'maxResults' => 1, 'startAt' => 1]);
         $page3 = $this->jsonResponse(['issues' => [], 'total' => 3, 'maxResults' => 1, 'startAt' => 2]);
-        $client = $this->mockClientWithResponses([$page1, $page2, $page3]);
-        $api = $this->makeApi($client);
+        $config = $this->makeConfigWithResponses([$page1, $page2, $page3]);
+        $api = $this->makeApi($config);
 
         $pages = iterator_to_array($api->callPaginateGet('search/jql', [], Search::class));
 
@@ -332,8 +337,8 @@ class HttpApiTest extends TestCase
     public function test_paginate_get_empty_results(): void
     {
         $response = $this->jsonResponse(['issues' => [], 'total' => 0, 'maxResults' => 50, 'startAt' => 0]);
-        $client = $this->mockClientWithResponses([$response]);
-        $api = $this->makeApi($client);
+        $config = $this->makeConfigWithResponses([$response]);
+        $api = $this->makeApi($config);
 
         $pages = iterator_to_array($api->callPaginateGet('search/jql', [], Search::class));
 
@@ -344,8 +349,8 @@ class HttpApiTest extends TestCase
     public function test_paginate_get_respects_initial_start_at(): void
     {
         $response = $this->jsonResponse(['issues' => [], 'total' => 10, 'maxResults' => 10, 'startAt' => 5]);
-        $client = $this->mockClientWithResponses([$response]);
-        $api = $this->makeApi($client);
+        $config = $this->makeConfigWithResponses([$response]);
+        $api = $this->makeApi($config);
 
         $pages = iterator_to_array($api->callPaginateGet('search/jql', ['startAt' => 5], Search::class));
 

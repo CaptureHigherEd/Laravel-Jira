@@ -24,8 +24,7 @@ class AttachmentsTest extends TestCase
             'created' => '2024-01-01T09:00:00.000+0000',
             'thumbnail' => '',
         ]);
-        $client = $this->mockClientExpecting('GET', 'attachment/10001', ['query' => []], $response);
-        $api = new Attachments($client);
+        $api = new Attachments($this->makeConfig($response));
 
         $result = $api->show('10001');
 
@@ -37,8 +36,7 @@ class AttachmentsTest extends TestCase
     public function test_delete(): void
     {
         $response = $this->noContentResponse();
-        $client = $this->mockClientExpecting('DELETE', 'attachment/10001', ['query' => []], $response);
-        $api = new Attachments($client);
+        $api = new Attachments($this->makeConfig($response));
 
         $result = $api->delete('10001');
 
@@ -49,8 +47,7 @@ class AttachmentsTest extends TestCase
     {
         $meta = ['enabled' => true, 'uploadLimit' => 10485760];
         $response = $this->jsonResponse($meta);
-        $client = $this->mockClientExpecting('GET', 'attachment/meta', ['query' => []], $response);
-        $api = new Attachments($client);
+        $api = new Attachments($this->makeConfig($response));
 
         $result = $api->getMeta();
 
@@ -61,7 +58,7 @@ class AttachmentsTest extends TestCase
 
     private function makeApi(): Attachments
     {
-        return new Attachments($this->mockClient($this->jsonResponse([])));
+        return new Attachments($this->makeConfig($this->jsonResponse([])));
     }
 
     public function test_show_throws_on_empty_attachment_id(): void

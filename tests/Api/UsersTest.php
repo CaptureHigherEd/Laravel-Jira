@@ -18,8 +18,7 @@ class UsersTest extends TestCase
         $response = $this->jsonResponse([
             ['accountId' => 'u1', 'displayName' => 'Alice', 'emailAddress' => 'alice@example.com', 'active' => true],
         ]);
-        $client = $this->mockClientExpecting('GET', 'users', ['query' => ['maxResults' => 1000]], $response);
-        $api = new Users($client);
+        $api = new Users($this->makeConfig($response));
 
         $result = $api->index();
 
@@ -30,8 +29,7 @@ class UsersTest extends TestCase
     public function test_index_with_custom_params(): void
     {
         $response = $this->jsonResponse([]);
-        $client = $this->mockClientExpecting('GET', 'users', ['query' => ['maxResults' => 50, 'startAt' => 100]], $response);
-        $api = new Users($client);
+        $api = new Users($this->makeConfig($response));
 
         $result = $api->index(['maxResults' => 50, 'startAt' => 100]);
 
@@ -41,8 +39,7 @@ class UsersTest extends TestCase
     public function test_show(): void
     {
         $response = $this->jsonResponse(['accountId' => 'u1', 'displayName' => 'Alice', 'emailAddress' => 'alice@example.com', 'active' => true]);
-        $client = $this->mockClientExpecting('GET', 'user', ['query' => ['accountId' => 'u1']], $response);
-        $api = new Users($client);
+        $api = new Users($this->makeConfig($response));
 
         $result = $api->show('u1');
 
@@ -55,8 +52,7 @@ class UsersTest extends TestCase
         $response = $this->jsonResponse([
             ['accountId' => 'u1', 'displayName' => 'Alice', 'emailAddress' => 'alice@example.com', 'active' => true],
         ]);
-        $client = $this->mockClientExpecting('GET', 'user/search', ['query' => ['query' => 'alice']], $response);
-        $api = new Users($client);
+        $api = new Users($this->makeConfig($response));
 
         $result = $api->search(['query' => 'alice']);
 
@@ -67,8 +63,7 @@ class UsersTest extends TestCase
     public function test_myself(): void
     {
         $response = $this->jsonResponse(['accountId' => 'me', 'displayName' => 'Current User', 'emailAddress' => 'me@example.com', 'active' => true]);
-        $client = $this->mockClientExpecting('GET', 'myself', ['query' => []], $response);
-        $api = new Users($client);
+        $api = new Users($this->makeConfig($response));
 
         $result = $api->myself();
 
@@ -81,7 +76,7 @@ class UsersTest extends TestCase
     public function test_show_throws_on_empty_account_id(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $api = new Users($this->mockClient($this->jsonResponse([])));
+        $api = new Users($this->makeConfig($this->jsonResponse([])));
         $api->show('');
     }
 }

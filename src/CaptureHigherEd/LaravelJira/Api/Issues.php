@@ -86,7 +86,7 @@ class Issues extends HttpApi
     {
         Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
 
-        return (new Comments($this->httpClient))->create($issueId, $params);
+        return (new Comments($this->config))->create($issueId, $params);
     }
 
     /**
@@ -241,10 +241,12 @@ class Issues extends HttpApi
     {
         Assert::stringNotEmpty($issueId, 'Issue ID must not be empty.');
         Assert::stringNotEmpty($accountId, 'Account ID must not be empty.');
-        $response = $this->httpClient->request('POST', sprintf('issue/%s/watchers', $issueId), [
-            'body' => json_encode($accountId),
-            'headers' => ['Content-Type' => 'application/json'],
-        ]);
+
+        $response = $this->httpPostRaw(
+            sprintf('issue/%s/watchers', $issueId),
+            (string) json_encode($accountId),
+            'application/json'
+        );
 
         return $this->hydrateResponse($response);
     }

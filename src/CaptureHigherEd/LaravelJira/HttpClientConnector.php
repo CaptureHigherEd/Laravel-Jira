@@ -2,7 +2,10 @@
 
 namespace CaptureHigherEd\LaravelJira;
 
-use GuzzleHttp\Client;
+use CaptureHigherEd\LaravelJira\Http\HttpClientConfig;
+use CaptureHigherEd\LaravelJira\Http\RequestBuilder;
+use Http\Discovery\Psr17FactoryDiscovery;
+use Http\Discovery\Psr18ClientDiscovery;
 
 class HttpClientConnector
 {
@@ -26,16 +29,20 @@ class HttpClientConnector
         return $this;
     }
 
-    public function createClient(): Client
+    public function createConfig(): HttpClientConfig
     {
-        return new Client([
-            'http_errors' => false,
-            'base_uri' => $this->endpoint,
-            'headers' => [
+        $factory = Psr17FactoryDiscovery::findRequestFactory();
+        $streamFactory = Psr17FactoryDiscovery::findStreamFactory();
+
+        return new HttpClientConfig(
+            httpClient: Psr18ClientDiscovery::find(),
+            requestBuilder: new RequestBuilder($factory, $streamFactory),
+            baseUri: $this->endpoint ?? '',
+            defaultHeaders: [
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
                 'Authorization' => "Basic {$this->apiKey}",
             ],
-        ]);
+        );
     }
 }

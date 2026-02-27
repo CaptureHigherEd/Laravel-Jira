@@ -17,8 +17,7 @@ class IssueLinksTest extends TestCase
     {
         $response = $this->mockResponse(201, null);
         $params = ['type' => ['name' => 'Blocks'], 'inwardIssue' => ['key' => 'KEY-1'], 'outwardIssue' => ['key' => 'KEY-2']];
-        $client = $this->mockClientExpecting('POST', 'issueLink', ['json' => $params], $response);
-        $api = new IssueLinks($client);
+        $api = new IssueLinks($this->makeConfig($response));
 
         $result = $api->create($params);
 
@@ -34,8 +33,7 @@ class IssueLinksTest extends TestCase
             'inwardIssue' => ['id' => '10001', 'key' => 'KEY-1'],
             'outwardIssue' => ['id' => '10002', 'key' => 'KEY-2'],
         ]);
-        $client = $this->mockClientExpecting('GET', 'issueLink/10000', ['query' => []], $response);
-        $api = new IssueLinks($client);
+        $api = new IssueLinks($this->makeConfig($response));
 
         $result = $api->show('10000');
 
@@ -46,8 +44,7 @@ class IssueLinksTest extends TestCase
     public function test_delete(): void
     {
         $response = $this->noContentResponse();
-        $client = $this->mockClientExpecting('DELETE', 'issueLink/10000', ['query' => []], $response);
-        $api = new IssueLinks($client);
+        $api = new IssueLinks($this->makeConfig($response));
 
         $result = $api->delete('10000');
 
@@ -61,8 +58,7 @@ class IssueLinksTest extends TestCase
                 ['id' => '1', 'name' => 'Blocks', 'inward' => 'is blocked by', 'outward' => 'blocks', 'self' => ''],
             ],
         ]);
-        $client = $this->mockClientExpecting('GET', 'issueLinkType', ['query' => []], $response);
-        $api = new IssueLinks($client);
+        $api = new IssueLinks($this->makeConfig($response));
 
         $result = $api->getTypes();
 
@@ -75,7 +71,7 @@ class IssueLinksTest extends TestCase
 
     private function makeApi(): IssueLinks
     {
-        return new IssueLinks($this->mockClient($this->jsonResponse([])));
+        return new IssueLinks($this->makeConfig($this->jsonResponse([])));
     }
 
     public function test_show_throws_on_empty_link_id(): void

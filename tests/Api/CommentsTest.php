@@ -23,8 +23,7 @@ class CommentsTest extends TestCase
             'maxResults' => 50,
             'startAt' => 0,
         ]);
-        $client = $this->mockClientExpecting('GET', 'issue/KEY-1/comment', ['query' => []], $response);
-        $api = new Comments($client);
+        $api = new Comments($this->makeConfig($response));
 
         $result = $api->index('KEY-1');
 
@@ -36,8 +35,7 @@ class CommentsTest extends TestCase
     public function test_show(): void
     {
         $response = $this->jsonResponse(['id' => '42', 'body' => [], 'created' => '', 'updated' => '', 'self' => '', 'jsdPublic' => true, 'visibility' => []]);
-        $client = $this->mockClientExpecting('GET', 'issue/KEY-1/comment/42', ['query' => []], $response);
-        $api = new Comments($client);
+        $api = new Comments($this->makeConfig($response));
 
         $result = $api->show('KEY-1', '42');
 
@@ -48,8 +46,7 @@ class CommentsTest extends TestCase
     public function test_create(): void
     {
         $response = $this->jsonResponse(['id' => '100', 'body' => ['type' => 'doc'], 'created' => '', 'updated' => '', 'self' => '', 'jsdPublic' => true, 'visibility' => []]);
-        $client = $this->mockClientExpecting('POST', 'issue/KEY-1/comment', ['json' => ['body' => ['type' => 'doc']]], $response);
-        $api = new Comments($client);
+        $api = new Comments($this->makeConfig($response));
 
         $result = $api->create('KEY-1', ['body' => ['type' => 'doc']]);
 
@@ -60,8 +57,7 @@ class CommentsTest extends TestCase
     public function test_update(): void
     {
         $response = $this->jsonResponse(['id' => '42', 'body' => ['type' => 'doc'], 'created' => '', 'updated' => '', 'self' => '', 'jsdPublic' => true, 'visibility' => []]);
-        $client = $this->mockClientExpecting('PUT', 'issue/KEY-1/comment/42', ['json' => ['body' => ['type' => 'doc']]], $response);
-        $api = new Comments($client);
+        $api = new Comments($this->makeConfig($response));
 
         $result = $api->update('KEY-1', '42', ['body' => ['type' => 'doc']]);
 
@@ -72,8 +68,7 @@ class CommentsTest extends TestCase
     public function test_delete(): void
     {
         $response = $this->noContentResponse();
-        $client = $this->mockClientExpecting('DELETE', 'issue/KEY-1/comment/42', ['query' => []], $response);
-        $api = new Comments($client);
+        $api = new Comments($this->makeConfig($response));
 
         $result = $api->delete('KEY-1', '42');
 
@@ -84,8 +79,7 @@ class CommentsTest extends TestCase
     {
         $page1 = $this->jsonResponse(['comments' => [], 'total' => 2, 'maxResults' => 1, 'startAt' => 0]);
         $page2 = $this->jsonResponse(['comments' => [], 'total' => 2, 'maxResults' => 1, 'startAt' => 1]);
-        $client = $this->mockClientWithResponses([$page1, $page2]);
-        $api = new Comments($client);
+        $api = new Comments($this->makeConfigWithResponses([$page1, $page2]));
 
         $pages = iterator_to_array($api->paginate('KEY-1'));
 
@@ -98,7 +92,7 @@ class CommentsTest extends TestCase
 
     private function makeApi(): Comments
     {
-        return new Comments($this->mockClient($this->jsonResponse([])));
+        return new Comments($this->makeConfig($this->jsonResponse([])));
     }
 
     public function test_index_throws_on_empty_issue_id(): void

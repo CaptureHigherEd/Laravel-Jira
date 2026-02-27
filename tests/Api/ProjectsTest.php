@@ -18,8 +18,7 @@ class ProjectsTest extends TestCase
         $response = $this->jsonResponse([
             ['id' => '10000', 'key' => 'TEST', 'name' => 'Test Project', 'self' => '', 'projectTypeKey' => 'software', 'simplified' => false, 'avatarUrls' => []],
         ]);
-        $client = $this->mockClientExpecting('GET', 'project', ['query' => []], $response);
-        $api = new Projects($client);
+        $api = new Projects($this->makeConfig($response));
 
         $result = $api->index();
 
@@ -31,8 +30,7 @@ class ProjectsTest extends TestCase
     public function test_index_with_params(): void
     {
         $response = $this->jsonResponse([]);
-        $client = $this->mockClientExpecting('GET', 'project', ['query' => ['maxResults' => 10]], $response);
-        $api = new Projects($client);
+        $api = new Projects($this->makeConfig($response));
 
         $result = $api->index(['maxResults' => 10]);
 
@@ -42,8 +40,7 @@ class ProjectsTest extends TestCase
     public function test_show(): void
     {
         $response = $this->jsonResponse(['id' => '10000', 'key' => 'TEST', 'name' => 'Test Project', 'self' => '', 'projectTypeKey' => 'software', 'simplified' => false, 'avatarUrls' => []]);
-        $client = $this->mockClientExpecting('GET', 'project/TEST', ['query' => []], $response);
-        $api = new Projects($client);
+        $api = new Projects($this->makeConfig($response));
 
         $result = $api->show('TEST');
 
@@ -56,7 +53,7 @@ class ProjectsTest extends TestCase
     public function test_show_throws_on_empty_project_key(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $api = new Projects($this->mockClient($this->jsonResponse([])));
+        $api = new Projects($this->makeConfig($this->jsonResponse([])));
         $api->show('');
     }
 }
