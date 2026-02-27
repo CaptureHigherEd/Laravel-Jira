@@ -2,72 +2,43 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class Field implements ApiResponse
+final class Field extends Model
 {
-    const CLAUSENAMES = 'clauseNames';
-
-    const SEARCHABLE = 'searchable';
-
-    const NAVIGABLE = 'navigable';
-
-    const ORDERABLE = 'orderable';
-
-    const SCHEMA = 'schema';
-
-    const SCOPE = 'scope';
-
-    const CUSTOM = 'custom';
-
-    const NAME = 'name';
-
-    const KEY = 'key';
-
-    const ID = 'id';
-
-    private string $key = '';
-
-    private string $id = '';
-
-    private string $name = '';
-
-    private bool $custom = false;
-
-    private bool $orderable = false;
-
-    private bool $navigable = false;
-
-    private bool $searchable = false;
-
-    /** @var array<string> */
-    private array $clauseNames = [];
-
-    /** @var array<string, mixed> */
-    private array $schema = [];
-
-    /** @var array<string, mixed> */
-    private array $scope = [];
-
-    private function __construct() {}
+    /**
+     * @param  array<string>  $clauseNames
+     * @param  array<string, mixed>  $schema
+     * @param  array<string, mixed>  $scope
+     */
+    private function __construct(
+        private string $key = '',
+        private string $id = '',
+        private string $name = '',
+        private bool $custom = false,
+        private bool $orderable = false,
+        private bool $navigable = false,
+        private bool $searchable = false,
+        private array $clauseNames = [],
+        private array $schema = [],
+        private array $scope = [],
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data
      */
     public static function make(array $data = []): self
     {
-        $model = new self;
-
-        $model->setId($data[self::ID] ?? '');
-        $model->setKey($data[self::KEY] ?? '');
-        $model->setName($data[self::NAME] ?? '');
-        $model->setCustom($data[self::CUSTOM] ?? false);
-        $model->setSearchable($data[self::SEARCHABLE] ?? false);
-        $model->setOrderable($data[self::ORDERABLE] ?? false);
-        $model->setNavigable($data[self::NAVIGABLE] ?? false);
-        $model->setSchema($data[self::SCHEMA] ?? []);
-        $model->setClauseNames($data[self::CLAUSENAMES] ?? []);
-        $model->setScope($data[self::SCOPE] ?? []);
-
-        return $model;
+        return new self(
+            id: $data['id'] ?? '',
+            key: $data['key'] ?? '',
+            name: $data['name'] ?? '',
+            custom: $data['custom'] ?? false,
+            searchable: $data['searchable'] ?? false,
+            orderable: $data['orderable'] ?? false,
+            navigable: $data['navigable'] ?? false,
+            schema: $data['schema'] ?? [],
+            clauseNames: $data['clauseNames'] ?? [],
+            scope: $data['scope'] ?? [],
+        );
     }
 
     public function getId(): string
@@ -214,16 +185,16 @@ final class Field implements ApiResponse
     public function toArray(): array
     {
         return [
-            self::ID => $this->id,
-            self::KEY => $this->key,
-            self::NAME => $this->name,
-            self::CUSTOM => $this->custom,
-            self::ORDERABLE => $this->orderable,
-            self::NAVIGABLE => $this->navigable,
-            self::SEARCHABLE => $this->searchable,
-            self::CLAUSENAMES => $this->clauseNames,
-            self::SCHEMA => $this->schema,
-            self::SCOPE => $this->scope,
+            'id' => $this->id,
+            'key' => $this->key,
+            'name' => $this->name,
+            'custom' => $this->custom,
+            'orderable' => $this->orderable,
+            'navigable' => $this->navigable,
+            'searchable' => $this->searchable,
+            'clauseNames' => $this->clauseNames,
+            'schema' => $this->schema,
+            'scope' => $this->scope,
         ];
     }
 }

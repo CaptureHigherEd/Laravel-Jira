@@ -25,6 +25,21 @@ class Fields extends HttpApi
     }
 
     /**
+     * Get all labels
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-label-get
+     *
+     * @param  array<string, mixed>  $params
+     * @return array<mixed>
+     */
+    public function getLabels(array $params = []): array
+    {
+        $response = $this->httpGet('label', $params);
+
+        return $this->hydrateResponse($response);
+    }
+
+    /**
      * Get allowed values for a specific field within a project and issue type.
      *
      * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-createmeta-get

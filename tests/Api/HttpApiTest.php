@@ -4,6 +4,8 @@ namespace CaptureHigherEd\LaravelJira\Tests\Api;
 
 use CaptureHigherEd\LaravelJira\Api\HttpApi;
 use CaptureHigherEd\LaravelJira\Exception\HttpClientException;
+use CaptureHigherEd\LaravelJira\Models\ApiResponse;
+use CaptureHigherEd\LaravelJira\Models\Paginated;
 use CaptureHigherEd\LaravelJira\Models\Search;
 use CaptureHigherEd\LaravelJira\Tests\Concerns\MocksHttpResponses;
 use GuzzleHttp\ClientInterface;
@@ -50,14 +52,26 @@ class HttpApiTest extends TestCase
                 return $this->httpPut($path, $parameters);
             }
 
-            public function callHttpDelete(string $path): ResponseInterface
+            public function callHttpDelete(string $path, array $parameters = []): ResponseInterface
             {
-                return $this->httpDelete($path);
+                return $this->httpDelete($path, $parameters);
             }
 
             public function callHttpPostWithAttachments(string $path, array $multipart = []): ResponseInterface
             {
                 return $this->httpPostWithAttachments($path, $multipart);
+            }
+
+            /**
+             * @template T of Paginated&ApiResponse
+             *
+             * @param  array<string, mixed>  $parameters
+             * @param  class-string<T>  $class
+             * @return \Generator<int, T, mixed, void>
+             */
+            public function callPaginateGet(string $path, array $parameters, string $class): \Generator
+            {
+                return $this->paginateGet($path, $parameters, $class);
             }
         };
     }
@@ -212,10 +226,19 @@ class HttpApiTest extends TestCase
     public function test_http_delete_passes_path(): void
     {
         $response = $this->noContentResponse();
-        $client = $this->mockClientExpecting('DELETE', 'issue/KEY-1', [], $response);
+        $client = $this->mockClientExpecting('DELETE', 'issue/KEY-1', ['query' => []], $response);
         $api = $this->makeApi($client);
 
         $api->callHttpDelete('issue/KEY-1');
+    }
+
+    public function test_http_delete_passes_query_params(): void
+    {
+        $response = $this->noContentResponse();
+        $client = $this->mockClientExpecting('DELETE', 'issue/KEY-1/watchers', ['query' => ['accountId' => 'u1']], $response);
+        $api = $this->makeApi($client);
+
+        $api->callHttpDelete('issue/KEY-1/watchers', ['accountId' => 'u1']);
     }
 
     public function test_http_post_with_attachments_passes_multipart_and_headers(): void
@@ -232,5 +255,60 @@ class HttpApiTest extends TestCase
         $api = $this->makeApi($client);
 
         $api->callHttpPostWithAttachments('issue/KEY-1/attachments', $multipart);
+    }
+
+    // ── paginateGet ───────────────────────────────────────────────────────
+
+    public function test_paginate_get_single_page(): void
+    {
+        $response = $this->jsonResponse(['issues' => [], 'total' => 3, 'maxResults' => 50, 'startAt' => 0]);
+        $client = $this->mockClientWithResponses([$response]);
+        $api = $this->makeApi($client);
+
+        $pages = iterator_to_array($api->callPaginateGet('search/jql', [], Search::class));
+
+        $this->assertCount(1, $pages, 'Single page should yield exactly 1 result');
+        $this->assertInstanceOf(Search::class, $pages[0], 'Yielded value should be a Search instance');
+        $this->assertSame(3, $pages[0]->getTotal(), 'Total should be hydrated from response');
+    }
+
+    public function test_paginate_get_multiple_pages(): void
+    {
+        $page1 = $this->jsonResponse(['issues' => [], 'total' => 3, 'maxResults' => 1, 'startAt' => 0]);
+        $page2 = $this->jsonResponse(['issues' => [], 'total' => 3, 'maxResults' => 1, 'startAt' => 1]);
+        $page3 = $this->jsonResponse(['issues' => [], 'total' => 3, 'maxResults' => 1, 'startAt' => 2]);
+        $client = $this->mockClientWithResponses([$page1, $page2, $page3]);
+        $api = $this->makeApi($client);
+
+        $pages = iterator_to_array($api->callPaginateGet('search/jql', [], Search::class));
+
+        $this->assertCount(3, $pages, 'Three pages should yield exactly 3 results');
+        $this->assertSame(0, $pages[0]->getStartAt(), 'First page startAt should be 0');
+        $this->assertSame(1, $pages[1]->getStartAt(), 'Second page startAt should be 1');
+        $this->assertSame(2, $pages[2]->getStartAt(), 'Third page startAt should be 2');
+    }
+
+    public function test_paginate_get_empty_results(): void
+    {
+        $response = $this->jsonResponse(['issues' => [], 'total' => 0, 'maxResults' => 50, 'startAt' => 0]);
+        $client = $this->mockClientWithResponses([$response]);
+        $api = $this->makeApi($client);
+
+        $pages = iterator_to_array($api->callPaginateGet('search/jql', [], Search::class));
+
+        $this->assertCount(1, $pages, 'Empty results should still yield 1 (empty) page');
+        $this->assertSame(0, $pages[0]->getTotal(), 'Total should be 0 for empty results');
+    }
+
+    public function test_paginate_get_respects_initial_start_at(): void
+    {
+        $response = $this->jsonResponse(['issues' => [], 'total' => 10, 'maxResults' => 10, 'startAt' => 5]);
+        $client = $this->mockClientWithResponses([$response]);
+        $api = $this->makeApi($client);
+
+        $pages = iterator_to_array($api->callPaginateGet('search/jql', ['startAt' => 5], Search::class));
+
+        $this->assertCount(1, $pages, 'Should yield 1 page when startAt + maxResults >= total');
+        $this->assertSame(5, $pages[0]->getStartAt(), 'startAt should reflect initial offset');
     }
 }

@@ -2,65 +2,39 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class User implements ApiResponse
+final class User extends Model
 {
-    const NAME = 'displayName';
-
-    const KEY = 'accountId';
-
-    const EMAIL = 'emailAddress';
-
-    const ACTIVE = 'active';
-
-    const SELF = 'self';
-
-    const ACCOUNT_TYPE = 'accountType';
-
-    const TIME_ZONE = 'timeZone';
-
-    const LOCALE = 'locale';
-
-    const AVATAR_URLS = 'avatarUrls';
-
-    private string $key = '';
-
-    private string $email = '';
-
-    private bool $active = false;
-
-    private string $name = '';
-
-    private string $self = '';
-
-    private string $accountType = '';
-
-    private string $timeZone = '';
-
-    private string $locale = '';
-
-    /** @var array<string, string> */
-    private array $avatarUrls = [];
-
-    private function __construct() {}
+    /**
+     * @param  array<string, string>  $avatarUrls
+     */
+    private function __construct(
+        private string $key = '',
+        private string $email = '',
+        private bool $active = false,
+        private string $name = '',
+        private string $self = '',
+        private string $accountType = '',
+        private string $timeZone = '',
+        private string $locale = '',
+        private array $avatarUrls = [],
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data
      */
     public static function make(array $data = []): self
     {
-        $model = new self;
-
-        $model->setKey($data[self::KEY] ?? '');
-        $model->setName($data[self::NAME] ?? '');
-        $model->setEmail($data[self::EMAIL] ?? '');
-        $model->setActive($data[self::ACTIVE] ?? false);
-        $model->setSelf($data[self::SELF] ?? '');
-        $model->setAccountType($data[self::ACCOUNT_TYPE] ?? '');
-        $model->setTimeZone($data[self::TIME_ZONE] ?? '');
-        $model->setLocale($data[self::LOCALE] ?? '');
-        $model->setAvatarUrls($data[self::AVATAR_URLS] ?? []);
-
-        return $model;
+        return new self(
+            key: $data['accountId'] ?? '',
+            email: $data['emailAddress'] ?? '',
+            active: $data['active'] ?? false,
+            name: $data['displayName'] ?? '',
+            self: $data['self'] ?? '',
+            accountType: $data['accountType'] ?? '',
+            timeZone: $data['timeZone'] ?? '',
+            locale: $data['locale'] ?? '',
+            avatarUrls: $data['avatarUrls'] ?? [],
+        );
     }
 
     public function getKey(): string
@@ -183,15 +157,15 @@ final class User implements ApiResponse
     public function toArray(): array
     {
         return [
-            self::KEY => $this->key,
-            self::NAME => $this->name,
-            self::EMAIL => $this->email,
-            self::ACTIVE => $this->active,
-            self::SELF => $this->self,
-            self::ACCOUNT_TYPE => $this->accountType,
-            self::TIME_ZONE => $this->timeZone,
-            self::LOCALE => $this->locale,
-            self::AVATAR_URLS => $this->avatarUrls,
+            'accountId' => $this->key,
+            'displayName' => $this->name,
+            'emailAddress' => $this->email,
+            'active' => $this->active,
+            'self' => $this->self,
+            'accountType' => $this->accountType,
+            'timeZone' => $this->timeZone,
+            'locale' => $this->locale,
+            'avatarUrls' => $this->avatarUrls,
         ];
     }
 }

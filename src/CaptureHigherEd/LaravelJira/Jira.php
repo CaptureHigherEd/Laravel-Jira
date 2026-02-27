@@ -42,4 +42,29 @@ class Jira
     {
         return new Api\Users($this->httpClient);
     }
+
+    public function projects(): Api\Projects
+    {
+        return new Api\Projects($this->httpClient);
+    }
+
+    public function comments(): Api\Comments
+    {
+        return new Api\Comments($this->httpClient);
+    }
+
+    public function worklogs(): Api\Worklogs
+    {
+        return new Api\Worklogs($this->httpClient);
+    }
+
+    public function issueLinks(): Api\IssueLinks
+    {
+        return new Api\IssueLinks($this->httpClient);
+    }
+
+    public function attachments(): Api\Attachments
+    {
+        return new Api\Attachments($this->httpClient);
+    }
 }

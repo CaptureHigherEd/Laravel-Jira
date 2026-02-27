@@ -74,6 +74,20 @@ class FieldsTest extends TestCase
         $this->assertCount(1, $result->getFields(), 'Fields::index() should return exactly 1 field from the response');
     }
 
+    // ── getLabels ─────────────────────────────────────────────────────────
+
+    public function test_get_labels(): void
+    {
+        $labelsData = ['values' => ['backend', 'bug', 'frontend'], 'total' => 3];
+        $response = $this->jsonResponse($labelsData);
+        $client = $this->mockClientExpecting('GET', 'label', ['query' => []], $response);
+        $api = new Fields($client);
+
+        $result = $api->getLabels();
+
+        $this->assertSame($labelsData, $result, 'Fields::getLabels() should return the raw label data array from the API response');
+    }
+
     // ── getFieldOptions ───────────────────────────────────────────────────
 
     public function test_get_field_options_happy_path(): void

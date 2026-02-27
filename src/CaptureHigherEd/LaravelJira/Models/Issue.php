@@ -2,7 +2,7 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class Issue implements ApiResponse
+final class Issue extends Model
 {
     const KEY = 'key';
 

@@ -2,6 +2,7 @@
 
 namespace CaptureHigherEd\LaravelJira\Api;
 
+use CaptureHigherEd\LaravelJira\Models\User;
 use CaptureHigherEd\LaravelJira\Models\Users as ModelsUsers;
 
 /**
@@ -21,5 +22,43 @@ class Users extends HttpApi
         $response = $this->httpGet('users', $params);
 
         return $this->hydrateResponse($response, ModelsUsers::class);
+    }
+
+    /**
+     * Get a user by account ID
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-user-get
+     */
+    public function show(string $accountId): User
+    {
+        $response = $this->httpGet('user', ['accountId' => $accountId]);
+
+        return $this->hydrateResponse($response, User::class);
+    }
+
+    /**
+     * Search for users
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-user-search/#api-rest-api-3-user-search-get
+     *
+     * @param  array<string, mixed>  $params
+     */
+    public function search(array $params = []): ModelsUsers
+    {
+        $response = $this->httpGet('user/search', $params);
+
+        return $this->hydrateResponse($response, ModelsUsers::class);
+    }
+
+    /**
+     * Get the currently authenticated user
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-myself/#api-rest-api-3-myself-get
+     */
+    public function myself(): User
+    {
+        $response = $this->httpGet('myself');
+
+        return $this->hydrateResponse($response, User::class);
     }
 }
