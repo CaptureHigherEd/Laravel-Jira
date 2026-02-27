@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.1.0] - Unreleased
+## [2.0.0] - Unreleased
 
 ### Breaking Changes
 
@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`Field::getOptions()` removed** — use `Api\Fields::getFieldOptions(Field $field, string $projectKey, string $issueTypeName)` instead
 - **PHP minimum version raised** from `^8.0.2` to `^8.1`
 - **Laravel minimum version raised** from `^8.0||^9.0` to `^10.0||^11.0||^12.0`
+- **`Issues::comment()` now delegates to `Comments::create()`** — behavior unchanged but internal routing differs
+- **All model `const` declarations removed** — any code referencing e.g. `User::NAME` or `Issue::FIELDS` must use string literals
+- **All models now extend `Model` base class** instead of implementing `ApiResponse` directly
 
 ### Added
 
@@ -27,6 +30,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI matrix via GitHub Actions: PHP 8.2 / 8.3 / 8.4 × Laravel 10 / 11 / 12
 - PHPStan (level 6) and Pint (Laravel preset) configuration
 - Comprehensive test suite: 115 tests across models, API classes, exceptions, and the service provider
+- `Api\Projects` — `index()`, `show()`
+- `Api\Comments` — `index()`, `show()`, `create()`, `update()`, `delete()`
+- `Api\Worklogs` — `index()`, `create()`, `update()`, `delete()`
+- `Api\IssueLinks` — `create()`, `show()`, `delete()`, `getTypes()`
+- `Api\Attachments` — `show()`, `delete()`, `getMeta()`
+- `Api\Fields::getLabels()` for label retrieval
+- `Issues::getTransitions()`, `transition()`, `assign()`, `getWatchers()`, `addWatcher()`, `removeWatcher()`
+- `Users::search()`, `myself()`
+- `Jira` entry point methods: `projects()`, `comments()`, `worklogs()`, `issueLinks()`, `attachments()`
+- 10 new models: `Transition`, `Transitions`, `Projects`, `Watchers`, `Comments` (collection), `Worklog`, `Worklogs`, `IssueLink`, `IssueLinkType`, `IssueLinkTypes`
+- Abstract `Model` base class implementing `ApiResponse`
+- `Issue` typed getters: `getStatus()`, `getAssignee()`, `getReporter()`, `getPriority()`, `getIssueType()`, `getProject()`, `getResolution()`, etc.
+- `FieldMeta` and `FieldMetas` models for createmeta responses
+- `IssueTypes` collection model
+- `HttpApi::httpDelete()` now accepts query parameters
+- Test suite expanded to 199 tests
 
 ### Fixed
 
@@ -41,6 +60,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `User::$active` is now strictly typed as `bool`
 - `HttpApi` constructor now accepts `GuzzleHttp\ClientInterface` (PSR) instead of the concrete `Client`
 - All `HttpClientException` factory methods now declare `self` as their return type
+- All 27 models refactored: constructor promotion, `const` declarations removed, `make()` uses named args
+- Collection models use `array_map` instead of `foreach` loops
+- `Issues::search()` migrated to `/rest/api/3/search/jql` endpoint
 
 ## [1.0.5] - 2025-09-02
 
@@ -78,8 +100,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/CaptureHigherEd/Laravel-Jira/compare/1.1.0...HEAD
-[1.1.0]: https://github.com/CaptureHigherEd/Laravel-Jira/compare/1.0.5...1.1.0
+[Unreleased]: https://github.com/CaptureHigherEd/Laravel-Jira/compare/2.0.0...HEAD
+[2.0.0]: https://github.com/CaptureHigherEd/Laravel-Jira/compare/1.0.5...2.0.0
 [1.0.5]: https://github.com/CaptureHigherEd/Laravel-Jira/compare/v1.0.4...1.0.5
 [1.0.4]: https://github.com/CaptureHigherEd/Laravel-Jira/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/CaptureHigherEd/Laravel-Jira/compare/v1.0.2...v1.0.3
