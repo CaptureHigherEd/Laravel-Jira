@@ -22,6 +22,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `Api\HttpClient` — escape hatch for arbitrary Jira API calls not yet covered by a specific `Api` class; accessible via `Jira::httpClient()`
+- `Jira::httpClient(): Api\HttpClient` — entry point for the raw HTTP escape hatch
+- `HttpServerException::networkError(\Throwable $previous): self` — wraps PSR-18 `NetworkExceptionInterface` transport failures (timeouts, DNS, connection reset); `getResponseCode()` returns `0`, `getResponse()` returns `null`
+- `HttpServerException::unknownHttpResponseCode(ResponseInterface $response): self` — thrown for unexpected non-4xx responses in the default `handleErrors()` branch
+- `Exception\Concerns\ParsesResponseBody` trait — shared response-body parsing logic (rewind, read, JSON decode, content-type check) extracted from both exception classes; also provides `getResponse()`, `getResponseBody()`, `getResponseCode()`
 - `Attachment` and `Attachments` models with full `make()` / `toArray()` support
 - `Comment` model with full `make()` / `toArray()` support
 - `Api\Fields::getFieldOptions(Field $field, string $projectKey, string $issueTypeName): array` — replaces `Field::getOptions()`
@@ -53,6 +58,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `HttpClientException` constructor now rewinds the response body stream before reading, preventing double-consume
 - Guzzle requests now use `['json' => $params]` instead of `['body' => json_encode($params)]`
 - Service provider now returns `null` when `jira.token` is not set instead of throwing a `RuntimeException`
+- PSR-18 `NetworkExceptionInterface` (transport-level failures) was previously unhandled; all `sendRequest()` calls now catch it and rethrow as `HttpServerException::networkError()`
+- `handleErrors()` default branch now correctly classifies unrecognized 4xx codes as `HttpClientException` and routes all other unrecognized codes to `HttpServerException::unknownHttpResponseCode()` — previously all unrecognized codes threw `HttpClientException`
 
 ### Changed
 
@@ -63,6 +70,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All 27 models refactored: constructor promotion, `const` declarations removed, `make()` uses named args
 - Collection models use `array_map` instead of `foreach` loops
 - `Issues::search()` migrated to `/rest/api/3/search/jql` endpoint
+- `HttpClientConnector` and `Http\RequestBuilder` are now marked `final`
+- `declare(strict_types=1)` added to all source files
+- `str_starts_with()` replaces `strpos(...) !== 0` in exception classes (PHP 8.1+)
 
 ## [1.0.5] - 2025-09-02
 

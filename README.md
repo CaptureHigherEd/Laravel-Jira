@@ -360,9 +360,41 @@ foreach ($jira->issues()->paginate(['jql' => 'project = PROJ']) as $page) {
 
 ---
 
+### Raw HTTP Access
+
+For Jira endpoints not yet covered by a specific API class, use the `httpClient()` escape hatch. All methods return the raw PSR-7 `ResponseInterface`:
+
+```php
+use Psr\Http\Message\ResponseInterface;
+
+// GET any endpoint
+$response = $jira->httpClient()->httpGet('issue/PROJ-123/subtasks');
+
+// POST with a JSON body
+$response = $jira->httpClient()->httpPost('issue', ['fields' => [/* ... */]]);
+
+// PUT, DELETE, raw POST also available
+$response = $jira->httpClient()->httpPut('issue/PROJ-123', ['fields' => [/* ... */]]);
+$response = $jira->httpClient()->httpDelete('issue/PROJ-123');
+```
+
+---
+
 ## Error Handling
 
-All HTTP errors throw `CaptureHigherEd\LaravelJira\Exception\HttpClientException`:
+All exceptions implement `CaptureHigherEd\LaravelJira\Exception\JiraException`, so you can catch everything with a single type:
+
+```php
+use CaptureHigherEd\LaravelJira\Exception\JiraException;
+
+try {
+    $issue = $jira->issues()->show('PROJ-123');
+} catch (JiraException $e) {
+    // catches 4xx, 5xx, and network failures
+}
+```
+
+**4xx client errors** throw `HttpClientException`:
 
 ```php
 use CaptureHigherEd\LaravelJira\Exception\HttpClientException;
@@ -376,7 +408,24 @@ try {
 }
 ```
 
-Covered status codes: 400, 401, 402, 403, 404, 409, 413, 422, 429, 500, 502, 503.
+**5xx server errors and network failures** throw `HttpServerException`:
+
+```php
+use CaptureHigherEd\LaravelJira\Exception\HttpServerException;
+
+try {
+    $issue = $jira->issues()->show('PROJ-123');
+} catch (HttpServerException $e) {
+    if ($e->getResponseCode() === 0) {
+        // Transport failure: timeout, DNS error, connection reset, etc.
+        echo $e->getMessage(); // A network error occurred. Check connectivity and try again.
+    } else {
+        echo $e->getResponseCode(); // 500, 502, 503, etc.
+    }
+}
+```
+
+Both exception classes expose `getResponse(): ?ResponseInterface`, `getResponseBody(): array`, and `getResponseCode(): int`.
 
 ## License
 
