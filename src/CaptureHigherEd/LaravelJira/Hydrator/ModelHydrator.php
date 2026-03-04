@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CaptureHigherEd\LaravelJira\Hydrator;
 
 use CaptureHigherEd\LaravelJira\Exception\HydrationException;

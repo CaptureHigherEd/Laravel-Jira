@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CaptureHigherEd\LaravelJira\Api;
 
 use CaptureHigherEd\LaravelJira\Assert;
