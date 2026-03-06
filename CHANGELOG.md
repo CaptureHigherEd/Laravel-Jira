@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased](https://github.com/CaptureHigherEd/Laravel-Jira/compare/v2.0.0...HEAD)
+## [Unreleased](https://github.com/CaptureHigherEd/Laravel-Jira/compare/1.2.0...HEAD)
 
 ## [v2.0.0](https://github.com/CaptureHigherEd/Laravel-Jira/compare/v1.0.5...v2.0.0) - Unreleased
 
