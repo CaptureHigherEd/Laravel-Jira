@@ -12,6 +12,9 @@ use CaptureHigherEd\LaravelJira\Models\Paginated;
 use CaptureHigherEd\LaravelJira\Models\Search;
 use CaptureHigherEd\LaravelJira\Tests\Concerns\MocksHttpResponses;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Client\ClientInterface as PsrClientInterface;
+use Psr\Http\Client\NetworkExceptionInterface;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 class HttpApiTest extends TestCase
@@ -22,6 +25,33 @@ class HttpApiTest extends TestCase
     private function makeApiWithResponse(ResponseInterface $response): object
     {
         return $this->makeApi($this->makeConfig($response));
+    }
+
+    private function makeApiWithNetworkException(\Throwable $exception): object
+    {
+        $networkException = new class($exception) extends \RuntimeException implements NetworkExceptionInterface
+        {
+            public function __construct(\Throwable $previous, private readonly RequestInterface $req = new \GuzzleHttp\Psr7\Request('GET', '/'))
+            {
+                parent::__construct($previous->getMessage(), 0, $previous);
+            }
+
+            public function getRequest(): RequestInterface
+            {
+                return $this->req;
+            }
+        };
+
+        $client = $this->createMock(PsrClientInterface::class);
+        $client->method('sendRequest')->willThrowException($networkException);
+
+        $config = new HttpClientConfig(
+            $client,
+            $this->makeRequestBuilder(),
+            'https://test.atlassian.net/rest/api/3/'
+        );
+
+        return $this->makeApi($config);
     }
 
     /** @return HttpApi&object{callHydrateResponse: callable, callHandleErrors: callable, callHttpGet: callable, callHttpPost: callable, callHttpPut: callable, callHttpDelete: callable, callHttpPostWithAttachments: callable, callHttpPostRaw: callable} */
@@ -356,5 +386,52 @@ class HttpApiTest extends TestCase
 
         $this->assertCount(1, $pages, 'Should yield 1 page when startAt + maxResults >= total');
         $this->assertSame(5, $pages[0]->getStartAt(), 'startAt should reflect initial offset');
+    }
+
+    // ── network exception wrapping ────────────────────────────────────────
+
+    /** @dataProvider networkExceptionMethodProvider */
+    public function test_http_methods_wrap_network_exception(string $method, array $args): void
+    {
+        $api = $this->makeApiWithNetworkException(new \RuntimeException('Connection refused'));
+
+        $this->expectException(HttpServerException::class);
+        $this->expectExceptionMessage('network error');
+
+        $api->$method(...$args);
+    }
+
+    /** @return array<string, array{string, array<mixed>}> */
+    public static function networkExceptionMethodProvider(): array
+    {
+        return [
+            'httpGet' => ['callHttpGet', ['search']],
+            'httpPost' => ['callHttpPost', ['issue', []]],
+            'httpPut' => ['callHttpPut', ['issue/KEY-1', []]],
+            'httpDelete' => ['callHttpDelete', ['issue/KEY-1']],
+            'httpPostRaw' => ['callHttpPostRaw', ['issue/KEY-1/watchers', '"u1"']],
+        ];
+    }
+
+    // ── handleErrors default case split ───────────────────────────────────
+
+    public function test_handle_errors_unknown_4xx_throws_client_exception(): void
+    {
+        $response = $this->plainErrorResponse(418, 'teapot');
+        $api = $this->makeApiWithResponse($response);
+
+        $this->expectException(HttpClientException::class);
+
+        $api->callHandleErrors($response);
+    }
+
+    public function test_handle_errors_non_4xx_non_matched_throws_server_exception(): void
+    {
+        $response = $this->mockResponse(302, '');
+        $api = $this->makeApiWithResponse($response);
+
+        $this->expectException(HttpServerException::class);
+
+        $api->callHandleErrors($response);
     }
 }

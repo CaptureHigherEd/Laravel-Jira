@@ -1,33 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CaptureHigherEd\LaravelJira\Exception;
 
+use CaptureHigherEd\LaravelJira\Exception\Concerns\ParsesResponseBody;
 use Psr\Http\Message\ResponseInterface;
 
 final class HttpServerException extends \RuntimeException implements JiraException
 {
-    private ?ResponseInterface $response;
+    use ParsesResponseBody;
 
-    /** @var array<string, mixed> */
-    private array $responseBody = [];
-
-    private int $responseCode;
-
-    public function __construct(string $message, int $code, ResponseInterface $response)
+    public function __construct(string $message, int $code, ?ResponseInterface $response, ?\Throwable $previous = null)
     {
-        parent::__construct($message, $code);
+        parent::__construct($message, $code, $previous);
 
-        $this->response = $response;
-        $this->responseCode = $response->getStatusCode();
-
-        $response->getBody()->rewind();
-        $body = $response->getBody()->__toString();
-
-        if (strpos($response->getHeaderLine('Content-Type'), 'application/json') !== 0) {
-            $this->responseBody['message'] = $body;
-        } elseif ($body) {
-            $this->responseBody = json_decode($body, true) ?? [];
-        }
+        $this->parseResponse($response);
     }
 
     public static function serverError(ResponseInterface $response): self
@@ -41,21 +29,19 @@ final class HttpServerException extends \RuntimeException implements JiraExcepti
         );
     }
 
-    public function getResponse(): ?ResponseInterface
+    public static function networkError(\Throwable $previous): self
     {
-        return $this->response;
+        return new self('A network error occurred. Check connectivity and try again.', 0, null, $previous);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function getResponseBody(): array
+    public static function unknownHttpResponseCode(ResponseInterface $response): self
     {
-        return $this->responseBody;
-    }
+        $statusCode = $response->getStatusCode();
 
-    public function getResponseCode(): int
-    {
-        return $this->responseCode;
+        return new self(
+            sprintf('Unexpected HTTP response code %d.', $statusCode),
+            $statusCode,
+            $response
+        );
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CaptureHigherEd\LaravelJira\Api;
 
 use CaptureHigherEd\LaravelJira\Exception\HttpClientException;
@@ -7,6 +9,7 @@ use CaptureHigherEd\LaravelJira\Exception\HttpServerException;
 use CaptureHigherEd\LaravelJira\Http\HttpClientConfig;
 use CaptureHigherEd\LaravelJira\Models\ApiResponse;
 use CaptureHigherEd\LaravelJira\Models\Paginated;
+use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -30,7 +33,7 @@ abstract class HttpApi
             $this->config->requestBuilder->create('GET', $this->buildUri($path, $parameters))
         );
 
-        return $this->lastResponse = $this->config->httpClient->sendRequest($request);
+        return $this->lastResponse = $this->sendRequest($request);
     }
 
     /**
@@ -42,7 +45,7 @@ abstract class HttpApi
             $this->config->requestBuilder->createWithJson('POST', $this->buildUri($path), $parameters)
         );
 
-        return $this->lastResponse = $this->config->httpClient->sendRequest($request);
+        return $this->lastResponse = $this->sendRequest($request);
     }
 
     /**
@@ -54,7 +57,7 @@ abstract class HttpApi
             $this->config->requestBuilder->createWithMultipart('POST', $this->buildUri($path), $multipart)
         )->withHeader('X-Atlassian-Token', 'no-check');
 
-        return $this->lastResponse = $this->config->httpClient->sendRequest($request);
+        return $this->lastResponse = $this->sendRequest($request);
     }
 
     /**
@@ -66,7 +69,7 @@ abstract class HttpApi
             $this->config->requestBuilder->createWithRawBody('POST', $this->buildUri($path), $body, $contentType)
         );
 
-        return $this->lastResponse = $this->config->httpClient->sendRequest($request);
+        return $this->lastResponse = $this->sendRequest($request);
     }
 
     /**
@@ -78,7 +81,7 @@ abstract class HttpApi
             $this->config->requestBuilder->createWithJson('PUT', $this->buildUri($path), $parameters)
         );
 
-        return $this->lastResponse = $this->config->httpClient->sendRequest($request);
+        return $this->lastResponse = $this->sendRequest($request);
     }
 
     /**
@@ -90,7 +93,16 @@ abstract class HttpApi
             $this->config->requestBuilder->create('DELETE', $this->buildUri($path, $parameters))
         );
 
-        return $this->lastResponse = $this->config->httpClient->sendRequest($request);
+        return $this->lastResponse = $this->sendRequest($request);
+    }
+
+    private function sendRequest(RequestInterface $request): ResponseInterface
+    {
+        try {
+            return $this->config->httpClient->sendRequest($request);
+        } catch (NetworkExceptionInterface $e) {
+            throw HttpServerException::networkError($e);
+        }
     }
 
     protected function handleErrors(ResponseInterface $response): void
@@ -121,10 +133,10 @@ abstract class HttpApi
             case 503:
                 throw HttpServerException::serverError($response);
             default:
-                if ($statusCode >= 500) {
-                    throw HttpServerException::serverError($response);
+                if ($statusCode >= 400 && $statusCode < 500) {
+                    throw HttpClientException::unknown($response);
                 }
-                throw HttpClientException::unknown($response);
+                throw HttpServerException::unknownHttpResponseCode($response);
         }
     }
 

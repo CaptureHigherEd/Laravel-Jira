@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CaptureHigherEd\LaravelJira;
 
 use CaptureHigherEd\LaravelJira\Http\HttpClientConfig;
@@ -66,5 +68,10 @@ class Jira
     public function attachments(): Api\Attachments
     {
         return new Api\Attachments($this->config);
+    }
+
+    public function httpClient(): Api\HttpClient
+    {
+        return new Api\HttpClient($this->config);
     }
 }

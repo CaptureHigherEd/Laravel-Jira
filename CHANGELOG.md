@@ -1,110 +1,80 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+## [Unreleased](https://github.com/CaptureHigherEd/Laravel-Jira/compare/1.2.0...HEAD)
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [v2.0.0](https://github.com/CaptureHigherEd/Laravel-Jira/compare/v1.0.5...v2.0.0) - Unreleased
 
-## [Unreleased]
+* [2.x] Add `Api\HttpClient` escape hatch for arbitrary API calls; expose via `Jira::httpClient()` by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/17
+* [2.x] Add `HttpServerException::networkError()` factory to wrap PSR-18 `NetworkExceptionInterface` transport failures by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/17
+* [2.x] Add `HttpServerException::unknownHttpResponseCode()` factory for unrecognized non-4xx responses by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/17
+* [2.x] Extract `Exception\Concerns\ParsesResponseBody` trait to eliminate duplicated body-parsing logic across exception classes by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/17
+* [2.x] Catch `NetworkExceptionInterface` in all `sendRequest()` calls and rethrow as `HttpServerException::networkError()` by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/17
+* [2.x] Fix `handleErrors()` default branch to route unknown 4xx codes to `HttpClientException` and all other unrecognized codes to `HttpServerException` by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/17
+* [2.x] Mark `HttpClientConnector` and `Http\RequestBuilder` as `final` by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/17
+* [2.x] Add `declare(strict_types=1)` to all source files by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/17
+* [2.x] Replace `strpos(...) !== 0` with `str_starts_with()` throughout exception classes by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/17
+* [2.x] Add `Api\Projects` with `index()` and `show()` by [@mpetty](https://github.com/mpetty)
+* [2.x] Add `Api\Comments` with `index()`, `show()`, `create()`, `update()`, `delete()` by [@mpetty](https://github.com/mpetty)
+* [2.x] Add `Api\Worklogs` with `index()`, `create()`, `update()`, `delete()` by [@mpetty](https://github.com/mpetty)
+* [2.x] Add `Api\IssueLinks` with `create()`, `show()`, `delete()`, `getTypes()` by [@mpetty](https://github.com/mpetty)
+* [2.x] Add `Api\Attachments` with `show()`, `delete()`, `getMeta()` by [@mpetty](https://github.com/mpetty)
+* [2.x] Add `Api\Fields::getLabels()` for label retrieval by [@mpetty](https://github.com/mpetty)
+* [2.x] Add `Issues::getTransitions()`, `transition()`, `assign()`, `getWatchers()`, `addWatcher()`, `removeWatcher()` by [@mpetty](https://github.com/mpetty)
+* [2.x] Add `Users::search()` and `myself()` by [@mpetty](https://github.com/mpetty)
+* [2.x] Add `Jira` entry point methods: `projects()`, `comments()`, `worklogs()`, `issueLinks()`, `attachments()` by [@mpetty](https://github.com/mpetty)
+* [2.x] Add `Paginated` interface, `HasPagination` trait, and `HttpApi::paginateGet()` generator for automatic pagination by [@mpetty](https://github.com/mpetty)
+* [2.x] Add 10 new models: `Transition`, `Transitions`, `Projects`, `Watchers`, `Comments`, `Worklog`, `Worklogs`, `IssueLink`, `IssueLinkType`, `IssueLinkTypes` by [@mpetty](https://github.com/mpetty)
+* [2.x] Add `Attachment` and `Attachments` models by [@mpetty](https://github.com/mpetty)
+* [2.x] Add `Comment` model by [@mpetty](https://github.com/mpetty)
+* [2.x] Add `FieldMeta` and `FieldMetas` models for createmeta responses by [@mpetty](https://github.com/mpetty)
+* [2.x] Add `IssueTypes` collection model by [@mpetty](https://github.com/mpetty)
+* [2.x] Add abstract `Model` base class implementing `ApiResponse` by [@mpetty](https://github.com/mpetty)
+* [2.x] Add typed getters to `Issue` for nested models (`getStatus()`, `getAssignee()`, `getReporter()`, etc.) by [@mpetty](https://github.com/mpetty)
+* [2.x] Add `Api\Fields::getFieldOptions()` replacing removed `Field::getOptions()` by [@mpetty](https://github.com/mpetty)
+* [2.x] Add `toArray()` to `Field`, `Fields`, `Search`, `User`, `Users` by [@mpetty](https://github.com/mpetty)
+* [2.x] Add HTTP error handling for status codes 422, 500, 502, 503 by [@mpetty](https://github.com/mpetty)
+* [2.x] Add `HttpApi::httpDelete()` query parameter support by [@mpetty](https://github.com/mpetty)
+* [2.x] Add CI matrix via GitHub Actions: PHP 8.2 / 8.3 / 8.4 × Laravel 10 / 11 / 12 by [@mpetty](https://github.com/mpetty)
+* [2.x] Add `getLastResponse(): ?ResponseInterface` to `HttpApi` by [@mpetty](https://github.com/mpetty)
+* [2.x] Migrate to PSR-18 HTTP client with `HttpClientConfig`, `RequestBuilder`, and `HttpClientConnector` by [@mpetty](https://github.com/mpetty)
+* [2.x] Add hydrator strategy pattern: `ModelHydrator`, `ArrayHydrator`, `NoopHydrator` by [@mpetty](https://github.com/mpetty)
+* [2.x] Raise PHP minimum from `^8.0.2` to `^8.1` and Laravel minimum from `^8.0||^9.0` to `^10.0||^11.0||^12.0` by [@mpetty](https://github.com/mpetty)
+* [2.x] Fix `array_filter` on issue fields to preserve falsy non-null values (`0`, `''`, `false`) by [@mpetty](https://github.com/mpetty)
+* [2.x] Fix `HttpClientException` constructor to rewind response body before reading by [@mpetty](https://github.com/mpetty)
+* [2.x] Fix Guzzle requests to use `['json' => $params]` instead of `['body' => json_encode($params)]` by [@mpetty](https://github.com/mpetty)
+* [2.x] Fix service provider to return `null` instead of throwing `RuntimeException` when API token is unset by [@mpetty](https://github.com/mpetty)
+* [2.x] Migrate `Issues::search()` to `/rest/api/3/search/jql` endpoint by [@mpetty](https://github.com/mpetty)
+* [2.x] Remove `Field::getOptions()` — use `Api\Fields::getFieldOptions()` instead by [@mpetty](https://github.com/mpetty)
+* [2.x] Remove all model `const` declarations by [@mpetty](https://github.com/mpetty)
 
-## [2.0.0] - Unreleased
+## [v1.2.0](https://github.com/CaptureHigherEd/Laravel-Jira/compare/1.1.0...1.2.0) - 2025-09-03
 
-### Breaking Changes
+* [1.x] Update Laravel compatibility to support >= 8 by [@mpetty](https://github.com/mpetty)
 
-- **`Issues::attach()` return type changed** from `Issue` to `Attachments` — update any code that accesses the returned object
-- **`Issues::comment()` return type changed** from `Issue` to `Comment` — update any code that accesses the returned object
-- **`Field::getOptions()` removed** — use `Api\Fields::getFieldOptions(Field $field, string $projectKey, string $issueTypeName)` instead
-- **PHP minimum version raised** from `^8.0.2` to `^8.1`
-- **Laravel minimum version raised** from `^8.0||^9.0` to `^10.0||^11.0||^12.0`
-- **`Issues::comment()` now delegates to `Comments::create()`** — behavior unchanged but internal routing differs
-- **All model `const` declarations removed** — any code referencing e.g. `User::NAME` or `Issue::FIELDS` must use string literals
-- **All models now extend `Model` base class** instead of implementing `ApiResponse` directly
+## [v1.1.0](https://github.com/CaptureHigherEd/Laravel-Jira/compare/1.0.5...1.1.0) - 2024-04-11
 
-### Added
+* [1.x] Update allowed versions of Laravel (8, 9, 10, 11) by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/4
 
-- `Attachment` and `Attachments` models with full `make()` / `toArray()` support
-- `Comment` model with full `make()` / `toArray()` support
-- `Api\Fields::getFieldOptions(Field $field, string $projectKey, string $issueTypeName): array` — replaces `Field::getOptions()`
-- `toArray()` implemented on `Field`, `Fields`, `Search`, `User`, `Users`
-- HTTP error handling for status codes 422 (Unprocessable Entity), 500, 502, 503
-- CI matrix via GitHub Actions: PHP 8.2 / 8.3 / 8.4 × Laravel 10 / 11 / 12
-- PHPStan (level 6) and Pint (Laravel preset) configuration
-- Comprehensive test suite: 115 tests across models, API classes, exceptions, and the service provider
-- `Api\Projects` — `index()`, `show()`
-- `Api\Comments` — `index()`, `show()`, `create()`, `update()`, `delete()`
-- `Api\Worklogs` — `index()`, `create()`, `update()`, `delete()`
-- `Api\IssueLinks` — `create()`, `show()`, `delete()`, `getTypes()`
-- `Api\Attachments` — `show()`, `delete()`, `getMeta()`
-- `Api\Fields::getLabels()` for label retrieval
-- `Issues::getTransitions()`, `transition()`, `assign()`, `getWatchers()`, `addWatcher()`, `removeWatcher()`
-- `Users::search()`, `myself()`
-- `Jira` entry point methods: `projects()`, `comments()`, `worklogs()`, `issueLinks()`, `attachments()`
-- 10 new models: `Transition`, `Transitions`, `Projects`, `Watchers`, `Comments` (collection), `Worklog`, `Worklogs`, `IssueLink`, `IssueLinkType`, `IssueLinkTypes`
-- Abstract `Model` base class implementing `ApiResponse`
-- `Issue` typed getters: `getStatus()`, `getAssignee()`, `getReporter()`, `getPriority()`, `getIssueType()`, `getProject()`, `getResolution()`, etc.
-- `FieldMeta` and `FieldMetas` models for createmeta responses
-- `IssueTypes` collection model
-- `HttpApi::httpDelete()` now accepts query parameters
-- Test suite expanded to 199 tests
+## [v1.0.5](https://github.com/CaptureHigherEd/Laravel-Jira/compare/v1.0.4...1.0.5) - 2023-12-27
 
-### Fixed
+* [1.x] Add `$is_multi_select` parameter to `Issue::setCustomFieldByValue()` by [@adugatkin](https://github.com/adugatkin) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/2
 
-- `array_filter` on issue fields now preserves falsy non-null values (`0`, `''`, `false`) — previously dropped them
-- `HttpClientException` constructor now rewinds the response body stream before reading, preventing double-consume
-- Guzzle requests now use `['json' => $params]` instead of `['body' => json_encode($params)]`
-- Service provider now returns `null` when `jira.token` is not set instead of throwing a `RuntimeException`
+## [v1.0.4](https://github.com/CaptureHigherEd/Laravel-Jira/compare/v1.0.3...v1.0.4) - 2023-07-17
 
-### Changed
+* [1.x] Minor fix to `Issues.php` by [@adugatkin](https://github.com/adugatkin)
 
-- All model getters and setters are now fully typed
-- `User::$active` is now strictly typed as `bool`
-- `HttpApi` constructor now accepts `GuzzleHttp\ClientInterface` (PSR) instead of the concrete `Client`
-- All `HttpClientException` factory methods now declare `self` as their return type
-- All 27 models refactored: constructor promotion, `const` declarations removed, `make()` uses named args
-- Collection models use `array_map` instead of `foreach` loops
-- `Issues::search()` migrated to `/rest/api/3/search/jql` endpoint
+## [v1.0.3](https://github.com/CaptureHigherEd/Laravel-Jira/compare/v1.0.2...v1.0.3) - 2023-07-13
 
-## [1.0.5] - 2025-09-02
+* [1.x] Updates to allow for further flexibility and functionality by [@adugatkin](https://github.com/adugatkin) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/1
 
-### Added
+## [v1.0.2](https://github.com/CaptureHigherEd/Laravel-Jira/compare/v1.0.1...v1.0.2) - 2023-06-27
 
-- `Issue::setCustomFieldByValue()` now accepts a `$is_multi_select` parameter to control single vs. multi-select field format
+* [1.x] Update `composer.json` by [@adugatkin](https://github.com/adugatkin)
 
-## [1.0.4] - 2023-07-17
+## [v1.0.1](https://github.com/CaptureHigherEd/Laravel-Jira/compare/v1.0.0...v1.0.1) - 2023-06-20
 
-### Fixed
+* [1.x] Initial public release updates by [@adugatkin](https://github.com/adugatkin)
 
-- Minor fix to `Issues.php`
+## v1.0.0 - 2023-06-20
 
-## [1.0.3] - 2023-06-xx
-
-### Changed
-
-- Removed hardcoded values; issue link URL is now generated from config
-
-## [1.0.2] - 2023-xx-xx
-
-### Changed
-
-- `composer.json` updates
-
-## [1.0.1] - 2023-xx-xx
-
-### Changed
-
-- Initial public release updates
-
-## [1.0.0] - 2023-xx-xx
-
-### Added
-
-- Initial release
-
-[Unreleased]: https://github.com/CaptureHigherEd/Laravel-Jira/compare/2.0.0...HEAD
-[2.0.0]: https://github.com/CaptureHigherEd/Laravel-Jira/compare/1.0.5...2.0.0
-[1.0.5]: https://github.com/CaptureHigherEd/Laravel-Jira/compare/v1.0.4...1.0.5
-[1.0.4]: https://github.com/CaptureHigherEd/Laravel-Jira/compare/v1.0.3...v1.0.4
-[1.0.3]: https://github.com/CaptureHigherEd/Laravel-Jira/compare/v1.0.2...v1.0.3
-[1.0.2]: https://github.com/CaptureHigherEd/Laravel-Jira/compare/v1.0.1...v1.0.2
-[1.0.1]: https://github.com/CaptureHigherEd/Laravel-Jira/compare/v1.0.0...v1.0.1
-[1.0.0]: https://github.com/CaptureHigherEd/Laravel-Jira/releases/tag/v1.0.0
+* Initial release by [@adugatkin](https://github.com/adugatkin)

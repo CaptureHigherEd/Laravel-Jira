@@ -1,40 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CaptureHigherEd\LaravelJira\Exception;
 
+use CaptureHigherEd\LaravelJira\Exception\Concerns\ParsesResponseBody;
 use Psr\Http\Message\ResponseInterface;
 
 final class HttpClientException extends \RuntimeException implements JiraException
 {
-    private ?ResponseInterface $response;
-
-    /** @var array<string, mixed> */
-    private array $responseBody = [];
-
-    private int $responseCode;
+    use ParsesResponseBody;
 
     public function __construct(string $message, int $code, ResponseInterface $response)
     {
         parent::__construct($message, $code);
 
-        $this->response = $response;
-        $this->responseCode = $response->getStatusCode();
-
-        $response->getBody()->rewind();
-        $body = $response->getBody()->__toString();
-
-        if (strpos($response->getHeaderLine('Content-Type'), 'application/json') !== 0) {
-            $this->responseBody['message'] = $body;
-        } elseif ($body) {
-            $this->responseBody = json_decode($body, true) ?? [];
-        }
+        $this->parseResponse($response);
     }
 
     public static function badRequest(ResponseInterface $response): self
     {
         $body = $response->getBody()->__toString();
 
-        if (strpos($response->getHeaderLine('Content-Type'), 'application/json') !== 0) {
+        if (! str_starts_with($response->getHeaderLine('Content-Type'), 'application/json')) {
             $validationMessage = $body;
         } else {
             $jsonDecoded = json_decode($body, true);
@@ -63,7 +51,6 @@ final class HttpClientException extends \RuntimeException implements JiraExcepti
 
     public static function conflict(ResponseInterface $response): self
     {
-
         return new self('Request conflicts with current state of the target resource.', 409, $response);
     }
 
@@ -86,7 +73,7 @@ final class HttpClientException extends \RuntimeException implements JiraExcepti
     {
         $body = $response->getBody()->__toString();
 
-        if (strpos($response->getHeaderLine('Content-Type'), 'application/json') !== 0) {
+        if (! str_starts_with($response->getHeaderLine('Content-Type'), 'application/json')) {
             $validationMessage = $body;
         } else {
             $jsonDecoded = json_decode($body, true);
@@ -102,7 +89,7 @@ final class HttpClientException extends \RuntimeException implements JiraExcepti
     {
         $body = $response->getBody()->__toString();
 
-        if (strpos($response->getHeaderLine('Content-Type'), 'application/json') !== 0) {
+        if (! str_starts_with($response->getHeaderLine('Content-Type'), 'application/json')) {
             $validationMessage = $body;
         } else {
             $jsonDecoded = json_decode($body, true);
@@ -116,26 +103,6 @@ final class HttpClientException extends \RuntimeException implements JiraExcepti
 
     public static function unknown(ResponseInterface $response): self
     {
-        $message = 'Unknown Error';
-
-        return new self($message, $response->getStatusCode(), $response);
-    }
-
-    public function getResponse(): ?ResponseInterface
-    {
-        return $this->response;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function getResponseBody(): array
-    {
-        return $this->responseBody;
-    }
-
-    public function getResponseCode(): int
-    {
-        return $this->responseCode;
+        return new self('Unknown Error', $response->getStatusCode(), $response);
     }
 }

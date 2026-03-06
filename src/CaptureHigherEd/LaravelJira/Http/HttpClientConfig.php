@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CaptureHigherEd\LaravelJira\Http;
 
 use CaptureHigherEd\LaravelJira\Hydrator\Hydrator;
