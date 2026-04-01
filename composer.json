@@ -6,11 +6,11 @@
     "jira"
   ],
   "homepage": "https://capturehighered.com",
-  "type": "project",
+  "type": "library",
   "license": "MIT",
   "require": {
     "php": "^8.2",
-    "laravel/framework": ">=9.0"
+    "laravel/framework": "^10.0|^11.0|^12.0|^13.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^10.0"
@@ -25,6 +25,13 @@
       "allow-plugins": {
           "composer/package-versions-deprecated": true
       }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "CaptureHigherEd\\LaravelJira\\Providers\\IntegrationServiceProvider"
+      ]
+    }
   },
   "minimum-stability": "stable",
   "prefer-stable": true
