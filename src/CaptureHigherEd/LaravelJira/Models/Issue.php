@@ -45,7 +45,13 @@ final class Issue implements ApiResponse
 
     public function getDescription(): array|null
     {
-        return $this->fields[self::DESCRIPTION] ?? null;
+        $description = $this->fields[self::DESCRIPTION] ?? null;
+
+        if (is_array($description) && ! empty($description['content'])) {
+            $description['content'] = self::sanitizeAdfNodes($description['content']);
+        }
+
+        return $description;
     }
 
     public function getId(): string
@@ -156,5 +162,38 @@ final class Issue implements ApiResponse
         return [
             'fields' => $this->fields,
         ];
+    }
+
+    /**
+     * Recursively sanitize ADF nodes so empty "attrs" keys are objects, not arrays.
+     *
+     * PHP's json_decode converts JSON empty objects {} into empty PHP arrays [].
+     * When re-encoded, these become JSON arrays [] instead of objects {}, which
+     * Jira's ADF validator rejects as INVALID_INPUT. This converts empty attrs
+     * back to stdClass so they encode as {}.
+     */
+    private static function sanitizeAdfNodes(array $nodes): array
+    {
+        foreach ($nodes as &$node) {
+            if (isset($node['attrs']) && is_array($node['attrs']) && empty($node['attrs'])) {
+                $node['attrs'] = new \stdClass();
+            }
+
+            if (! empty($node['content']) && is_array($node['content'])) {
+                $node['content'] = self::sanitizeAdfNodes($node['content']);
+            }
+
+            if (! empty($node['marks']) && is_array($node['marks'])) {
+                foreach ($node['marks'] as &$mark) {
+                    if (isset($mark['attrs']) && is_array($mark['attrs']) && empty($mark['attrs'])) {
+                        $mark['attrs'] = new \stdClass();
+                    }
+                }
+                unset($mark);
+            }
+        }
+        unset($node);
+
+        return $nodes;
     }
 }
