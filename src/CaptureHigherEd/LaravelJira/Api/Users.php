@@ -22,4 +22,21 @@ class Users extends HttpApi
 
         return $this->hydrateResponse($response, ModelsUsers::class);
     }
+
+    /**
+     * Get users assignable to a project
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-user-search/#api-rest-api-3-user-assignable-search-get
+     *
+     * @param  array<string, mixed>  $params
+     */
+    public function assignableForProject(string $projectKey, array $params = []): ModelsUsers
+    {
+        $response = $this->httpGet('user/assignable/search', array_merge([
+            'project' => $projectKey,
+            'maxResults' => 1000,
+        ], $params));
+
+        return $this->hydrateResponse($response, ModelsUsers::class);
+    }
 }
