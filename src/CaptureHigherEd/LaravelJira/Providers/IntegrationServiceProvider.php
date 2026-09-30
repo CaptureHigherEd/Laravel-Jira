@@ -2,20 +2,16 @@
 
 namespace CaptureHigherEd\LaravelJira\Providers;
 
-use Illuminate\Support\ServiceProvider;
 use CaptureHigherEd\LaravelJira\Jira as JiraService;
 use Illuminate\Contracts\Support\DeferrableProvider;
+use Illuminate\Support\ServiceProvider;
 
 class IntegrationServiceProvider extends ServiceProvider implements DeferrableProvider
 {
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
-    {
-    }
+    public function boot(): void {}
 
     /**
      * Register any application services.
@@ -30,9 +26,9 @@ class IntegrationServiceProvider extends ServiceProvider implements DeferrablePr
     /**
      * Get the services provided by the provider.
      *
-     * @return array
+     * @return array<string>
      */
-    public function provides()
+    public function provides(): array
     {
         return [JiraService::class];
     }
@@ -44,7 +40,7 @@ class IntegrationServiceProvider extends ServiceProvider implements DeferrablePr
      */
     public function registerJiraService()
     {
-        $config = __DIR__ . '/../config/jira.php';
+        $config = __DIR__.'/../config/jira.php';
         $this->mergeConfigFrom($config, 'jira');
         $this->publishes([$config => config_path('jira.php')]);
 

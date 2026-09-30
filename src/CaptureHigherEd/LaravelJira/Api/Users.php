@@ -5,12 +5,16 @@ namespace CaptureHigherEd\LaravelJira\Api;
 use CaptureHigherEd\LaravelJira\Models\Users as ModelsUsers;
 
 /**
- * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-user-search/#api-rest-api-3-user-assignable-search-get
+ * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-group-users
  */
 class Users extends HttpApi
 {
     /**
      * Get all users
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-users-get
+     *
+     * @param  array<string, mixed>  $params
      */
     public function index(array $params = ['maxResults' => 1000]): ModelsUsers
     {
@@ -23,6 +27,8 @@ class Users extends HttpApi
      * Get users assignable to a project
      *
      * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-user-search/#api-rest-api-3-user-assignable-search-get
+     *
+     * @param  array<string, mixed>  $params
      */
     public function assignableForProject(string $projectKey, array $params = []): ModelsUsers
     {

@@ -4,7 +4,13 @@ namespace CaptureHigherEd\LaravelJira\Models;
 
 interface ApiResponse
 {
-    public static function make(array $data): self;
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function make(array $data = []): self;
 
+    /**
+     * @return array<mixed>
+     */
     public function toArray(): array;
 }

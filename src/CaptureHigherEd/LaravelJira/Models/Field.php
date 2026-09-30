@@ -2,37 +2,59 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-use CaptureHigherEd\LaravelJira\Jira;
-
 final class Field implements ApiResponse
 {
     const CLAUSENAMES = 'clauseNames';
+
     const SEARCHABLE = 'searchable';
+
     const NAVIGABLE = 'navigable';
+
     const ORDERABLE = 'orderable';
+
     const SCHEMA = 'schema';
+
+    const SCOPE = 'scope';
+
     const CUSTOM = 'custom';
+
     const NAME = 'name';
+
     const KEY = 'key';
+
     const ID = 'id';
 
     private string $key = '';
+
     private string $id = '';
+
     private string $name = '';
+
     private bool $custom = false;
+
     private bool $orderable = false;
+
     private bool $navigable = false;
+
     private bool $searchable = false;
+
+    /** @var array<string> */
     private array $clauseNames = [];
+
+    /** @var array<string, mixed> */
     private array $schema = [];
 
-    private function __construct()
-    {
-    }
+    /** @var array<string, mixed> */
+    private array $scope = [];
 
-    public static function make(?array $data = []): self
+    private function __construct() {}
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function make(array $data = []): self
     {
-        $model = new self();
+        $model = new self;
 
         $model->setId($data[self::ID] ?? '');
         $model->setKey($data[self::KEY] ?? '');
@@ -43,6 +65,7 @@ final class Field implements ApiResponse
         $model->setNavigable($data[self::NAVIGABLE] ?? false);
         $model->setSchema($data[self::SCHEMA] ?? []);
         $model->setClauseNames($data[self::CLAUSENAMES] ?? []);
+        $model->setScope($data[self::SCOPE] ?? []);
 
         return $model;
     }
@@ -57,78 +80,70 @@ final class Field implements ApiResponse
         return $this->key;
     }
 
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
 
-    public function getCustom()
+    public function getCustom(): bool
     {
         return $this->custom;
     }
 
-    public function getSearchable()
+    public function getSearchable(): bool
     {
         return $this->searchable;
     }
 
-    public function getNavigable()
+    public function getNavigable(): bool
     {
         return $this->navigable;
     }
 
-    public function getOrderable()
+    public function getOrderable(): bool
     {
         return $this->orderable;
     }
 
-    public function getSchema()
+    /**
+     * @return array<string, mixed>
+     */
+    public function getSchema(): array
     {
         return $this->schema;
     }
 
-    public function getClauseNames()
+    /**
+     * @return array<string>
+     */
+    public function getClauseNames(): array
     {
         return $this->clauseNames;
     }
 
-    public function getOptions(string $project_key, string $issue_type_name)
+    /**
+     * @return array<string, mixed>
+     */
+    public function getScope(): array
     {
-        $jira = app(Jira::class);
-        $meta = $jira->issues()->getCreateMeta(['expand' => 'projects.issuetypes.fields']);
-
-        foreach ($meta['projects'] as $project) {
-            if ($project['key'] == $project_key) {
-                foreach ($project['issuetypes'] as $issue_type) {
-                    if ($issue_type['name'] == $issue_type_name) {
-                        foreach ($issue_type['fields'] as $field_key => $field) {
-                            if ($field_key == $this->getKey()) {
-                                return collect($field['allowedValues'])->pluck('value', 'value')->toArray();
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return [];
+        return $this->scope;
     }
 
-    public function setId($value): self
+    public function setId(string $value): self
     {
         $this->id = $value;
 
         return $this;
     }
 
-    public function setKey($value): self
+    public function setKey(string $value): self
     {
         $this->key = $value;
 
         return $this;
     }
 
-    public function setName($value): self
+    public function setName(string $value): self
     {
         $this->name = $value;
 
@@ -163,6 +178,9 @@ final class Field implements ApiResponse
         return $this;
     }
 
+    /**
+     * @param  array<string, mixed>  $value
+     */
     public function setSchema(array $value): self
     {
         $this->schema = $value;
@@ -170,6 +188,9 @@ final class Field implements ApiResponse
         return $this;
     }
 
+    /**
+     * @param  array<string>  $value
+     */
     public function setClauseNames(array $value): self
     {
         $this->clauseNames = $value;
@@ -177,8 +198,32 @@ final class Field implements ApiResponse
         return $this;
     }
 
+    /**
+     * @param  array<string, mixed>  $value
+     */
+    public function setScope(array $value): self
+    {
+        $this->scope = $value;
+
+        return $this;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
-        return [];
+        return [
+            self::ID => $this->id,
+            self::KEY => $this->key,
+            self::NAME => $this->name,
+            self::CUSTOM => $this->custom,
+            self::ORDERABLE => $this->orderable,
+            self::NAVIGABLE => $this->navigable,
+            self::SEARCHABLE => $this->searchable,
+            self::CLAUSENAMES => $this->clauseNames,
+            self::SCHEMA => $this->schema,
+            self::SCOPE => $this->scope,
+        ];
     }
 }

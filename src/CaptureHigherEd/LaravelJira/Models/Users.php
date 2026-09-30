@@ -2,16 +2,17 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-
 final class Users implements ApiResponse
 {
+    /** @var array<int, User> */
     private array $users = [];
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
-    public static function make(?array $data = []): self
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function make(array $data = []): self
     {
         $users = [];
 
@@ -19,27 +20,36 @@ final class Users implements ApiResponse
             $users[] = User::make($item);
         }
 
-        $model = new self();
+        $model = new self;
 
         $model->users = $users;
 
         return $model;
     }
 
-    public function getUsers()
+    /**
+     * @return array<int, User>
+     */
+    public function getUsers(): array
     {
         return $this->users;
     }
 
-    public function getActiveUsers()
+    /**
+     * @return array<int, User>
+     */
+    public function getActiveUsers(): array
     {
         return array_filter($this->users, static function (User $user): bool {
             return $user->getActive();
         });
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     public function toArray(): array
     {
-        return [];
+        return array_map(fn (User $user) => $user->toArray(), $this->users);
     }
 }
