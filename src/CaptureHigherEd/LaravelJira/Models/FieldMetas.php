@@ -2,9 +2,11 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class FieldMetas implements ApiResponse
+use CaptureHigherEd\LaravelJira\Models\Concerns\HasPagination;
+
+final class FieldMetas extends Model implements Paginated
 {
-    const FIELDS = 'fields';
+    use HasPagination;
 
     /** @var array<int, FieldMeta> */
     private array $fields = [];
@@ -16,17 +18,13 @@ final class FieldMetas implements ApiResponse
      */
     public static function make(array $data = []): self
     {
-        $fields = [];
-
-        if (isset($data[self::FIELDS])) {
-            foreach ($data[self::FIELDS] as $item) {
-                $fields[] = FieldMeta::make($item);
-            }
-        }
-
         $model = new self;
 
-        $model->fields = $fields;
+        $model->hydratePagination($data);
+        $model->fields = array_map(
+            fn (array $item) => FieldMeta::make($item),
+            $data['fields'] ?? []
+        );
 
         return $model;
     }
@@ -40,10 +38,13 @@ final class FieldMetas implements ApiResponse
     }
 
     /**
-     * @return array<int, array<string, mixed>>
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {
-        return array_map(fn (FieldMeta $field) => $field->toArray(), $this->fields);
+        return [
+            'fields' => array_map(fn (FieldMeta $field) => $field->toArray(), $this->fields),
+            ...$this->paginationToArray(),
+        ];
     }
 }

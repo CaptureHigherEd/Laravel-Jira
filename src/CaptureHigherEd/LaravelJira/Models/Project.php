@@ -2,55 +2,35 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class Project implements ApiResponse
+final class Project extends Model
 {
-    const ID = 'id';
-
-    const KEY = 'key';
-
-    const NAME = 'name';
-
-    const SELF = 'self';
-
-    const PROJECT_TYPE_KEY = 'projectTypeKey';
-
-    const SIMPLIFIED = 'simplified';
-
-    const AVATAR_URLS = 'avatarUrls';
-
-    private string $id = '';
-
-    private string $key = '';
-
-    private string $name = '';
-
-    private string $self = '';
-
-    private string $projectTypeKey = '';
-
-    private bool $simplified = false;
-
-    /** @var array<string, string> */
-    private array $avatarUrls = [];
-
-    private function __construct() {}
+    /**
+     * @param  array<string, string>  $avatarUrls
+     */
+    private function __construct(
+        private string $id = '',
+        private string $key = '',
+        private string $name = '',
+        private string $self = '',
+        private string $projectTypeKey = '',
+        private bool $simplified = false,
+        private array $avatarUrls = [],
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data
      */
     public static function make(array $data = []): self
     {
-        $model = new self;
-
-        $model->setId($data[self::ID] ?? '');
-        $model->setKey($data[self::KEY] ?? '');
-        $model->setName($data[self::NAME] ?? '');
-        $model->setSelf($data[self::SELF] ?? '');
-        $model->setProjectTypeKey($data[self::PROJECT_TYPE_KEY] ?? '');
-        $model->setSimplified($data[self::SIMPLIFIED] ?? false);
-        $model->setAvatarUrls($data[self::AVATAR_URLS] ?? []);
-
-        return $model;
+        return new self(
+            id: $data['id'] ?? '',
+            key: $data['key'] ?? '',
+            name: $data['name'] ?? '',
+            self: $data['self'] ?? '',
+            projectTypeKey: $data['projectTypeKey'] ?? '',
+            simplified: $data['simplified'] ?? false,
+            avatarUrls: $data['avatarUrls'] ?? [],
+        );
     }
 
     public function getId(): string
@@ -149,13 +129,13 @@ final class Project implements ApiResponse
     public function toArray(): array
     {
         return [
-            self::ID => $this->id,
-            self::KEY => $this->key,
-            self::NAME => $this->name,
-            self::SELF => $this->self,
-            self::PROJECT_TYPE_KEY => $this->projectTypeKey,
-            self::SIMPLIFIED => $this->simplified,
-            self::AVATAR_URLS => $this->avatarUrls,
+            'id' => $this->id,
+            'key' => $this->key,
+            'name' => $this->name,
+            'self' => $this->self,
+            'projectTypeKey' => $this->projectTypeKey,
+            'simplified' => $this->simplified,
+            'avatarUrls' => $this->avatarUrls,
         ];
     }
 }

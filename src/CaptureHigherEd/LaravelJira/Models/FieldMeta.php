@@ -2,52 +2,35 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class FieldMeta implements ApiResponse
+final class FieldMeta extends Model
 {
-    const FIELD_ID = 'fieldId';
-
-    const NAME = 'name';
-
-    const REQUIRED = 'required';
-
-    const SCHEMA = 'schema';
-
-    const OPERATIONS = 'operations';
-
-    const ALLOWED_VALUES = 'allowedValues';
-
-    private string $fieldId = '';
-
-    private string $name = '';
-
-    private bool $required = false;
-
-    /** @var array<string, mixed> */
-    private array $schema = [];
-
-    /** @var array<string> */
-    private array $operations = [];
-
-    /** @var array<mixed> */
-    private array $allowedValues = [];
-
-    private function __construct() {}
+    /**
+     * @param  array<string, mixed>  $schema
+     * @param  array<string>  $operations
+     * @param  array<mixed>  $allowedValues
+     */
+    private function __construct(
+        private string $fieldId = '',
+        private string $name = '',
+        private bool $required = false,
+        private array $schema = [],
+        private array $operations = [],
+        private array $allowedValues = [],
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data
      */
     public static function make(array $data = []): self
     {
-        $model = new self;
-
-        $model->setFieldId($data[self::FIELD_ID] ?? '');
-        $model->setName($data[self::NAME] ?? '');
-        $model->setRequired($data[self::REQUIRED] ?? false);
-        $model->setSchema($data[self::SCHEMA] ?? []);
-        $model->setOperations($data[self::OPERATIONS] ?? []);
-        $model->setAllowedValues($data[self::ALLOWED_VALUES] ?? []);
-
-        return $model;
+        return new self(
+            fieldId: $data['fieldId'] ?? '',
+            name: $data['name'] ?? '',
+            required: $data['required'] ?? false,
+            schema: $data['schema'] ?? [],
+            operations: $data['operations'] ?? [],
+            allowedValues: $data['allowedValues'] ?? [],
+        );
     }
 
     public function getFieldId(): string
@@ -146,12 +129,12 @@ final class FieldMeta implements ApiResponse
     public function toArray(): array
     {
         return [
-            self::FIELD_ID => $this->fieldId,
-            self::NAME => $this->name,
-            self::REQUIRED => $this->required,
-            self::SCHEMA => $this->schema,
-            self::OPERATIONS => $this->operations,
-            self::ALLOWED_VALUES => $this->allowedValues,
+            'fieldId' => $this->fieldId,
+            'name' => $this->name,
+            'required' => $this->required,
+            'schema' => $this->schema,
+            'operations' => $this->operations,
+            'allowedValues' => $this->allowedValues,
         ];
     }
 }

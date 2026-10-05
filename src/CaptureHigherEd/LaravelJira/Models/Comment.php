@@ -2,66 +2,40 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class Comment implements ApiResponse
+final class Comment extends Model
 {
-    const ID = 'id';
-
-    const BODY = 'body';
-
-    const CREATED = 'created';
-
-    const UPDATED = 'updated';
-
-    const SELF = 'self';
-
-    const AUTHOR = 'author';
-
-    const UPDATE_AUTHOR = 'updateAuthor';
-
-    const JSD_PUBLIC = 'jsdPublic';
-
-    const VISIBILITY = 'visibility';
-
-    private string $id = '';
-
-    /** @var array<mixed> */
-    private array $body = [];
-
-    private string $created = '';
-
-    private string $updated = '';
-
-    private string $self = '';
-
-    private ?User $author = null;
-
-    private ?User $updateAuthor = null;
-
-    private bool $jsdPublic = true;
-
-    /** @var array<string, mixed> */
-    private array $visibility = [];
-
-    private function __construct() {}
+    /**
+     * @param  array<mixed>  $body
+     * @param  array<string, mixed>  $visibility
+     */
+    private function __construct(
+        private string $id = '',
+        private array $body = [],
+        private string $created = '',
+        private string $updated = '',
+        private string $self = '',
+        private ?User $author = null,
+        private ?User $updateAuthor = null,
+        private bool $jsdPublic = true,
+        private array $visibility = [],
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data
      */
     public static function make(array $data = []): self
     {
-        $model = new self;
-
-        $model->setId($data[self::ID] ?? '');
-        $model->setBody($data[self::BODY] ?? []);
-        $model->setCreated($data[self::CREATED] ?? '');
-        $model->setUpdated($data[self::UPDATED] ?? '');
-        $model->setSelf($data[self::SELF] ?? '');
-        $model->setAuthor(isset($data[self::AUTHOR]) ? User::make($data[self::AUTHOR]) : null);
-        $model->setUpdateAuthor(isset($data[self::UPDATE_AUTHOR]) ? User::make($data[self::UPDATE_AUTHOR]) : null);
-        $model->setJsdPublic($data[self::JSD_PUBLIC] ?? true);
-        $model->setVisibility($data[self::VISIBILITY] ?? []);
-
-        return $model;
+        return new self(
+            id: $data['id'] ?? '',
+            body: $data['body'] ?? [],
+            created: $data['created'] ?? '',
+            updated: $data['updated'] ?? '',
+            self: $data['self'] ?? '',
+            author: isset($data['author']) ? User::make($data['author']) : null,
+            updateAuthor: isset($data['updateAuthor']) ? User::make($data['updateAuthor']) : null,
+            jsdPublic: $data['jsdPublic'] ?? true,
+            visibility: $data['visibility'] ?? [],
+        );
     }
 
     public function getId(): string
@@ -190,15 +164,15 @@ final class Comment implements ApiResponse
     public function toArray(): array
     {
         return [
-            self::ID => $this->id,
-            self::BODY => $this->body,
-            self::CREATED => $this->created,
-            self::UPDATED => $this->updated,
-            self::SELF => $this->self,
-            self::AUTHOR => $this->author?->toArray(),
-            self::UPDATE_AUTHOR => $this->updateAuthor?->toArray(),
-            self::JSD_PUBLIC => $this->jsdPublic,
-            self::VISIBILITY => $this->visibility,
+            'id' => $this->id,
+            'body' => $this->body,
+            'created' => $this->created,
+            'updated' => $this->updated,
+            'self' => $this->self,
+            'author' => $this->author?->toArray(),
+            'updateAuthor' => $this->updateAuthor?->toArray(),
+            'jsdPublic' => $this->jsdPublic,
+            'visibility' => $this->visibility,
         ];
     }
 }

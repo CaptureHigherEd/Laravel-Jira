@@ -2,7 +2,7 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class Users implements ApiResponse
+final class Users extends Model
 {
     /** @var array<int, User> */
     private array $users = [];
@@ -14,15 +14,9 @@ final class Users implements ApiResponse
      */
     public static function make(array $data = []): self
     {
-        $users = [];
-
-        foreach ($data as $item) {
-            $users[] = User::make($item);
-        }
-
         $model = new self;
 
-        $model->users = $users;
+        $model->users = array_values(array_map(fn (array $item) => User::make($item), $data));
 
         return $model;
     }

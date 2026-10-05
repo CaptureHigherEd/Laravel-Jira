@@ -2,7 +2,7 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class Attachments implements ApiResponse
+final class Attachments extends Model
 {
     /** @var array<int, Attachment> */
     private array $attachments = [];
@@ -14,15 +14,9 @@ final class Attachments implements ApiResponse
      */
     public static function make(array $data = []): self
     {
-        $attachments = [];
-
-        foreach ($data as $item) {
-            $attachments[] = Attachment::make($item);
-        }
-
         $model = new self;
 
-        $model->attachments = $attachments;
+        $model->attachments = array_values(array_map(fn (array $item) => Attachment::make($item), $data));
 
         return $model;
     }

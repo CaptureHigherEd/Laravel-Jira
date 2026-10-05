@@ -2,9 +2,11 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class IssueTypes implements ApiResponse
+use CaptureHigherEd\LaravelJira\Models\Concerns\HasPagination;
+
+final class IssueTypes extends Model implements Paginated
 {
-    const ISSUE_TYPES = 'issueTypes';
+    use HasPagination;
 
     /** @var array<int, IssueType> */
     private array $issueTypes = [];
@@ -16,17 +18,13 @@ final class IssueTypes implements ApiResponse
      */
     public static function make(array $data = []): self
     {
-        $issueTypes = [];
-
-        if (isset($data[self::ISSUE_TYPES])) {
-            foreach ($data[self::ISSUE_TYPES] as $item) {
-                $issueTypes[] = IssueType::make($item);
-            }
-        }
-
         $model = new self;
 
-        $model->issueTypes = $issueTypes;
+        $model->hydratePagination($data);
+        $model->issueTypes = array_map(
+            fn (array $item) => IssueType::make($item),
+            $data['issueTypes'] ?? []
+        );
 
         return $model;
     }
@@ -40,10 +38,13 @@ final class IssueTypes implements ApiResponse
     }
 
     /**
-     * @return array<int, array<string, mixed>>
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {
-        return array_map(fn (IssueType $issueType) => $issueType->toArray(), $this->issueTypes);
+        return [
+            'issueTypes' => array_map(fn (IssueType $issueType) => $issueType->toArray(), $this->issueTypes),
+            ...$this->paginationToArray(),
+        ];
     }
 }

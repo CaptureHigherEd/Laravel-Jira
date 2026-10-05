@@ -2,50 +2,33 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class Status implements ApiResponse
+final class Status extends Model
 {
-    const ID = 'id';
-
-    const NAME = 'name';
-
-    const DESCRIPTION = 'description';
-
-    const ICON_URL = 'iconUrl';
-
-    const SELF = 'self';
-
-    const STATUS_CATEGORY = 'statusCategory';
-
-    private string $id = '';
-
-    private string $name = '';
-
-    private string $description = '';
-
-    private string $iconUrl = '';
-
-    private string $self = '';
-
-    /** @var array<string, mixed> */
-    private array $statusCategory = [];
-
-    private function __construct() {}
+    /**
+     * @param  array<string, mixed>  $statusCategory
+     */
+    private function __construct(
+        private string $id = '',
+        private string $name = '',
+        private string $description = '',
+        private string $iconUrl = '',
+        private string $self = '',
+        private array $statusCategory = [],
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data
      */
     public static function make(array $data = []): self
     {
-        $model = new self;
-
-        $model->setId($data[self::ID] ?? '');
-        $model->setName($data[self::NAME] ?? '');
-        $model->setDescription($data[self::DESCRIPTION] ?? '');
-        $model->setIconUrl($data[self::ICON_URL] ?? '');
-        $model->setSelf($data[self::SELF] ?? '');
-        $model->setStatusCategory($data[self::STATUS_CATEGORY] ?? []);
-
-        return $model;
+        return new self(
+            id: $data['id'] ?? '',
+            name: $data['name'] ?? '',
+            description: $data['description'] ?? '',
+            iconUrl: $data['iconUrl'] ?? '',
+            self: $data['self'] ?? '',
+            statusCategory: $data['statusCategory'] ?? [],
+        );
     }
 
     public function getId(): string
@@ -132,12 +115,12 @@ final class Status implements ApiResponse
     public function toArray(): array
     {
         return [
-            self::ID => $this->id,
-            self::NAME => $this->name,
-            self::DESCRIPTION => $this->description,
-            self::ICON_URL => $this->iconUrl,
-            self::SELF => $this->self,
-            self::STATUS_CATEGORY => $this->statusCategory,
+            'id' => $this->id,
+            'name' => $this->name,
+            'description' => $this->description,
+            'iconUrl' => $this->iconUrl,
+            'self' => $this->self,
+            'statusCategory' => $this->statusCategory,
         ];
     }
 }

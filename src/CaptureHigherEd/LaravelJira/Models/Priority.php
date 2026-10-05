@@ -2,59 +2,34 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class Priority implements ApiResponse
+final class Priority extends Model
 {
-    const ID = 'id';
-
-    const NAME = 'name';
-
-    const DESCRIPTION = 'description';
-
-    const ICON_URL = 'iconUrl';
-
-    const SELF = 'self';
-
-    const STATUS_COLOR = 'statusColor';
-
-    const IS_DEFAULT = 'isDefault';
-
-    const AVATAR_ID = 'avatarId';
-
-    private string $id = '';
-
-    private string $name = '';
-
-    private string $description = '';
-
-    private string $iconUrl = '';
-
-    private string $self = '';
-
-    private string $statusColor = '';
-
-    private bool $isDefault = false;
-
-    private int $avatarId = 0;
-
-    private function __construct() {}
+    private function __construct(
+        private string $id = '',
+        private string $name = '',
+        private string $description = '',
+        private string $iconUrl = '',
+        private string $self = '',
+        private string $statusColor = '',
+        private bool $isDefault = false,
+        private int $avatarId = 0,
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data
      */
     public static function make(array $data = []): self
     {
-        $model = new self;
-
-        $model->setId($data[self::ID] ?? '');
-        $model->setName($data[self::NAME] ?? '');
-        $model->setDescription($data[self::DESCRIPTION] ?? '');
-        $model->setIconUrl($data[self::ICON_URL] ?? '');
-        $model->setSelf($data[self::SELF] ?? '');
-        $model->setStatusColor($data[self::STATUS_COLOR] ?? '');
-        $model->setIsDefault($data[self::IS_DEFAULT] ?? false);
-        $model->setAvatarId((int) ($data[self::AVATAR_ID] ?? 0));
-
-        return $model;
+        return new self(
+            id: $data['id'] ?? '',
+            name: $data['name'] ?? '',
+            description: $data['description'] ?? '',
+            iconUrl: $data['iconUrl'] ?? '',
+            self: $data['self'] ?? '',
+            statusColor: $data['statusColor'] ?? '',
+            isDefault: $data['isDefault'] ?? false,
+            avatarId: (int) ($data['avatarId'] ?? 0),
+        );
     }
 
     public function getId(): string
@@ -159,14 +134,14 @@ final class Priority implements ApiResponse
     public function toArray(): array
     {
         return [
-            self::ID => $this->id,
-            self::NAME => $this->name,
-            self::DESCRIPTION => $this->description,
-            self::ICON_URL => $this->iconUrl,
-            self::SELF => $this->self,
-            self::STATUS_COLOR => $this->statusColor,
-            self::IS_DEFAULT => $this->isDefault,
-            self::AVATAR_ID => $this->avatarId,
+            'id' => $this->id,
+            'name' => $this->name,
+            'description' => $this->description,
+            'iconUrl' => $this->iconUrl,
+            'self' => $this->self,
+            'statusColor' => $this->statusColor,
+            'isDefault' => $this->isDefault,
+            'avatarId' => $this->avatarId,
         ];
     }
 }

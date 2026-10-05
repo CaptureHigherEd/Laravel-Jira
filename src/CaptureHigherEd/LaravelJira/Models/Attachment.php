@@ -2,64 +2,36 @@
 
 namespace CaptureHigherEd\LaravelJira\Models;
 
-final class Attachment implements ApiResponse
+final class Attachment extends Model
 {
-    const ID = 'id';
-
-    const FILENAME = 'filename';
-
-    const MIME_TYPE = 'mimeType';
-
-    const SIZE = 'size';
-
-    const CONTENT = 'content';
-
-    const SELF = 'self';
-
-    const AUTHOR = 'author';
-
-    const CREATED = 'created';
-
-    const THUMBNAIL = 'thumbnail';
-
-    private string $id = '';
-
-    private string $filename = '';
-
-    private string $mimeType = '';
-
-    private int $size = 0;
-
-    private string $content = '';
-
-    private string $self = '';
-
-    private ?User $author = null;
-
-    private string $created = '';
-
-    private string $thumbnail = '';
-
-    private function __construct() {}
+    private function __construct(
+        private string $id = '',
+        private string $filename = '',
+        private string $mimeType = '',
+        private int $size = 0,
+        private string $content = '',
+        private string $self = '',
+        private ?User $author = null,
+        private string $created = '',
+        private string $thumbnail = '',
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data
      */
     public static function make(array $data = []): self
     {
-        $model = new self;
-
-        $model->setId($data[self::ID] ?? '');
-        $model->setFilename($data[self::FILENAME] ?? '');
-        $model->setMimeType($data[self::MIME_TYPE] ?? '');
-        $model->setSize((int) ($data[self::SIZE] ?? 0));
-        $model->setContent($data[self::CONTENT] ?? '');
-        $model->setSelf($data[self::SELF] ?? '');
-        $model->setAuthor(isset($data[self::AUTHOR]) ? User::make($data[self::AUTHOR]) : null);
-        $model->setCreated($data[self::CREATED] ?? '');
-        $model->setThumbnail($data[self::THUMBNAIL] ?? '');
-
-        return $model;
+        return new self(
+            id: $data['id'] ?? '',
+            filename: $data['filename'] ?? '',
+            mimeType: $data['mimeType'] ?? '',
+            size: (int) ($data['size'] ?? 0),
+            content: $data['content'] ?? '',
+            self: $data['self'] ?? '',
+            author: isset($data['author']) ? User::make($data['author']) : null,
+            created: $data['created'] ?? '',
+            thumbnail: $data['thumbnail'] ?? '',
+        );
     }
 
     public function getId(): string
@@ -176,15 +148,15 @@ final class Attachment implements ApiResponse
     public function toArray(): array
     {
         return [
-            self::ID => $this->id,
-            self::FILENAME => $this->filename,
-            self::MIME_TYPE => $this->mimeType,
-            self::SIZE => $this->size,
-            self::CONTENT => $this->content,
-            self::SELF => $this->self,
-            self::AUTHOR => $this->author?->toArray(),
-            self::CREATED => $this->created,
-            self::THUMBNAIL => $this->thumbnail,
+            'id' => $this->id,
+            'filename' => $this->filename,
+            'mimeType' => $this->mimeType,
+            'size' => $this->size,
+            'content' => $this->content,
+            'self' => $this->self,
+            'author' => $this->author?->toArray(),
+            'created' => $this->created,
+            'thumbnail' => $this->thumbnail,
         ];
     }
 }

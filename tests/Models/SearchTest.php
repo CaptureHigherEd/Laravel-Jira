@@ -3,6 +3,7 @@
 namespace CaptureHigherEd\LaravelJira\Tests\Models;
 
 use CaptureHigherEd\LaravelJira\Models\Issue;
+use CaptureHigherEd\LaravelJira\Models\Paginated;
 use CaptureHigherEd\LaravelJira\Models\Search;
 use PHPUnit\Framework\TestCase;
 
@@ -48,5 +49,40 @@ class SearchTest extends TestCase
         foreach ($search->getIssues() as $issue) {
             $this->assertInstanceOf(Issue::class, $issue, 'Each item in the search results should be hydrated as an Issue instance');
         }
+    }
+
+    // ── pagination ────────────────────────────────────────────────────────
+
+    public function test_implements_paginated(): void
+    {
+        $this->assertInstanceOf(Paginated::class, Search::make(), 'Search should implement the Paginated interface');
+    }
+
+    public function test_make_hydrates_pagination(): void
+    {
+        $search = Search::make([
+            'issues' => [],
+            'total' => 42,
+            'maxResults' => 10,
+            'startAt' => 20,
+        ]);
+
+        $this->assertSame(42, $search->getTotal(), 'Search should hydrate total from response data');
+        $this->assertSame(10, $search->getMaxResults(), 'Search should hydrate maxResults from response data');
+        $this->assertSame(20, $search->getStartAt(), 'Search should hydrate startAt from response data');
+    }
+
+    public function test_has_more(): void
+    {
+        $search = Search::make(['issues' => [], 'total' => 100, 'maxResults' => 50, 'startAt' => 0]);
+
+        $this->assertTrue($search->hasMore(), 'hasMore() should return true when more pages exist');
+    }
+
+    public function test_has_more_false_on_last_page(): void
+    {
+        $search = Search::make(['issues' => [], 'total' => 100, 'maxResults' => 50, 'startAt' => 50]);
+
+        $this->assertFalse($search->hasMore(), 'hasMore() should return false on the last page');
     }
 }
