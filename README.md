@@ -362,7 +362,7 @@ foreach ($jira->issues()->paginate(['jql' => 'project = PROJ']) as $page) {
 
 ### Raw HTTP Access
 
-For Jira endpoints not yet covered by a specific API class, use the `httpClient()` escape hatch. All methods return the raw PSR-7 `ResponseInterface`:
+For Jira endpoints not yet covered by a specific API class, use the `httpClient()` escape hatch. All methods return the raw PSR-7 `ResponseInterface` as-is: check `getStatusCode()` yourself, since only transport failures throw here.
 
 ```php
 use Psr\Http\Message\ResponseInterface;
