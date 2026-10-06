@@ -2,6 +2,7 @@
 
 namespace CaptureHigherEd\LaravelJira\Api;
 
+use CaptureHigherEd\LaravelJira\Assert;
 use CaptureHigherEd\LaravelJira\Models\Project;
 use CaptureHigherEd\LaravelJira\Models\Projects as ModelsProjects;
 
@@ -33,6 +34,7 @@ class Projects extends HttpApi
      */
     public function show(string $projectKey, array $params = []): Project
     {
+        Assert::stringNotEmpty($projectKey, 'Project key must not be empty.');
         $response = $this->httpGet(sprintf('project/%s', $projectKey), $params);
 
         return $this->hydrateResponse($response, Project::class);

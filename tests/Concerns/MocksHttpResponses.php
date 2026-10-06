@@ -2,8 +2,11 @@
 
 namespace CaptureHigherEd\LaravelJira\Tests\Concerns;
 
-use GuzzleHttp\ClientInterface;
+use CaptureHigherEd\LaravelJira\Http\HttpClientConfig;
+use CaptureHigherEd\LaravelJira\Http\RequestBuilder;
+use GuzzleHttp\Psr7\HttpFactory;
 use GuzzleHttp\Psr7\Response;
+use Psr\Http\Client\ClientInterface as PsrClientInterface;
 use Psr\Http\Message\ResponseInterface;
 
 trait MocksHttpResponses
@@ -41,36 +44,45 @@ trait MocksHttpResponses
         return new Response($status, ['Content-Type' => 'text/plain'], $body);
     }
 
-    protected function mockClient(ResponseInterface $response): ClientInterface
+    protected function makeRequestBuilder(): RequestBuilder
     {
-        $client = $this->createMock(ClientInterface::class);
-        $client->method('request')->willReturn($response);
+        $factory = new HttpFactory;
 
-        return $client;
+        return new RequestBuilder($factory, $factory);
     }
 
     /**
-     * @param  array<string, mixed>  $options
+     * Build an HttpClientConfig backed by a PSR-18 mock that always returns $response.
+     *
+     * @param  array<string, string>  $defaultHeaders
      */
-    protected function mockClientExpecting(string $method, string $path, array $options, ResponseInterface $response): ClientInterface
+    protected function makeConfig(ResponseInterface $response, array $defaultHeaders = []): HttpClientConfig
     {
-        $client = $this->createMock(ClientInterface::class);
-        $client->expects($this->once())
-            ->method('request')
-            ->with($method, $path, $options)
-            ->willReturn($response);
+        $client = $this->createMock(PsrClientInterface::class);
+        $client->method('sendRequest')->willReturn($response);
 
-        return $client;
+        return new HttpClientConfig(
+            $client,
+            $this->makeRequestBuilder(),
+            'https://test.atlassian.net/rest/api/3/',
+            $defaultHeaders
+        );
     }
 
     /**
+     * Build an HttpClientConfig backed by a PSR-18 mock that returns responses in sequence.
+     *
      * @param  array<int, ResponseInterface>  $responses
      */
-    protected function mockClientWithResponses(array $responses): ClientInterface
+    protected function makeConfigWithResponses(array $responses): HttpClientConfig
     {
-        $client = $this->createMock(ClientInterface::class);
-        $client->method('request')->willReturnOnConsecutiveCalls(...$responses);
+        $client = $this->createMock(PsrClientInterface::class);
+        $client->method('sendRequest')->willReturnOnConsecutiveCalls(...$responses);
 
-        return $client;
+        return new HttpClientConfig(
+            $client,
+            $this->makeRequestBuilder(),
+            'https://test.atlassian.net/rest/api/3/',
+        );
     }
 }

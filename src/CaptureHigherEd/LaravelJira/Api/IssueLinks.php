@@ -2,6 +2,7 @@
 
 namespace CaptureHigherEd\LaravelJira\Api;
 
+use CaptureHigherEd\LaravelJira\Assert;
 use CaptureHigherEd\LaravelJira\Models\IssueLink;
 use CaptureHigherEd\LaravelJira\Models\IssueLinkTypes;
 
@@ -32,6 +33,7 @@ class IssueLinks extends HttpApi
      */
     public function show(string $linkId): IssueLink
     {
+        Assert::stringNotEmpty($linkId, 'Link ID must not be empty.');
         $response = $this->httpGet(sprintf('issueLink/%s', $linkId));
 
         return $this->hydrateResponse($response, IssueLink::class);
@@ -46,6 +48,7 @@ class IssueLinks extends HttpApi
      */
     public function delete(string $linkId): array
     {
+        Assert::stringNotEmpty($linkId, 'Link ID must not be empty.');
         $response = $this->httpDelete(sprintf('issueLink/%s', $linkId));
 
         return $this->hydrateResponse($response);

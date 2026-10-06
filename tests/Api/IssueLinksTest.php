@@ -3,6 +3,7 @@
 namespace CaptureHigherEd\LaravelJira\Tests\Api;
 
 use CaptureHigherEd\LaravelJira\Api\IssueLinks;
+use CaptureHigherEd\LaravelJira\Exception\InvalidArgumentException;
 use CaptureHigherEd\LaravelJira\Models\IssueLink;
 use CaptureHigherEd\LaravelJira\Models\IssueLinkTypes;
 use CaptureHigherEd\LaravelJira\Tests\Concerns\MocksHttpResponses;
@@ -16,8 +17,7 @@ class IssueLinksTest extends TestCase
     {
         $response = $this->mockResponse(201, null);
         $params = ['type' => ['name' => 'Blocks'], 'inwardIssue' => ['key' => 'KEY-1'], 'outwardIssue' => ['key' => 'KEY-2']];
-        $client = $this->mockClientExpecting('POST', 'issueLink', ['json' => $params], $response);
-        $api = new IssueLinks($client);
+        $api = new IssueLinks($this->makeConfig($response));
 
         $result = $api->create($params);
 
@@ -33,8 +33,7 @@ class IssueLinksTest extends TestCase
             'inwardIssue' => ['id' => '10001', 'key' => 'KEY-1'],
             'outwardIssue' => ['id' => '10002', 'key' => 'KEY-2'],
         ]);
-        $client = $this->mockClientExpecting('GET', 'issueLink/10000', ['query' => []], $response);
-        $api = new IssueLinks($client);
+        $api = new IssueLinks($this->makeConfig($response));
 
         $result = $api->show('10000');
 
@@ -45,8 +44,7 @@ class IssueLinksTest extends TestCase
     public function test_delete(): void
     {
         $response = $this->noContentResponse();
-        $client = $this->mockClientExpecting('DELETE', 'issueLink/10000', ['query' => []], $response);
-        $api = new IssueLinks($client);
+        $api = new IssueLinks($this->makeConfig($response));
 
         $result = $api->delete('10000');
 
@@ -60,13 +58,31 @@ class IssueLinksTest extends TestCase
                 ['id' => '1', 'name' => 'Blocks', 'inward' => 'is blocked by', 'outward' => 'blocks', 'self' => ''],
             ],
         ]);
-        $client = $this->mockClientExpecting('GET', 'issueLinkType', ['query' => []], $response);
-        $api = new IssueLinks($client);
+        $api = new IssueLinks($this->makeConfig($response));
 
         $result = $api->getTypes();
 
         $this->assertInstanceOf(IssueLinkTypes::class, $result, 'IssueLinks::getTypes() should return an IssueLinkTypes instance');
         $this->assertCount(1, $result->getTypes(), 'IssueLinks::getTypes() should return the correct number of link types');
         $this->assertSame('Blocks', $result->getTypes()[0]->getName(), 'IssueLinks::getTypes() should hydrate the type name correctly');
+    }
+
+    // ── Validation ────────────────────────────────────────────────────────
+
+    private function makeApi(): IssueLinks
+    {
+        return new IssueLinks($this->makeConfig($this->jsonResponse([])));
+    }
+
+    public function test_show_throws_on_empty_link_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->show('');
+    }
+
+    public function test_delete_throws_on_empty_link_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->delete('');
     }
 }

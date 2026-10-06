@@ -3,6 +3,7 @@
 namespace CaptureHigherEd\LaravelJira\Tests\Api;
 
 use CaptureHigherEd\LaravelJira\Api\Issues;
+use CaptureHigherEd\LaravelJira\Exception\InvalidArgumentException;
 use CaptureHigherEd\LaravelJira\Models\Attachments;
 use CaptureHigherEd\LaravelJira\Models\Comment;
 use CaptureHigherEd\LaravelJira\Models\FieldMetas;
@@ -25,8 +26,7 @@ class IssuesTest extends TestCase
         $response = $this->jsonResponse([
             'issues' => [['id' => '1', 'key' => 'KEY-1', 'fields' => ['summary' => 'Test']]],
         ]);
-        $client = $this->mockClientExpecting('GET', 'search/jql', ['query' => ['jql' => 'project=TEST']], $response);
-        $api = new Issues($client);
+        $api = new Issues($this->makeConfig($response));
 
         $result = $api->index(['jql' => 'project=TEST']);
 
@@ -37,8 +37,7 @@ class IssuesTest extends TestCase
     public function test_show(): void
     {
         $response = $this->jsonResponse(['id' => '10', 'key' => 'KEY-10', 'fields' => ['summary' => 'Issue']]);
-        $client = $this->mockClientExpecting('GET', 'issue/KEY-10', ['query' => []], $response);
-        $api = new Issues($client);
+        $api = new Issues($this->makeConfig($response));
 
         $result = $api->show('KEY-10');
 
@@ -49,8 +48,7 @@ class IssuesTest extends TestCase
     public function test_create(): void
     {
         $response = $this->mockResponse(201, ['id' => '11', 'key' => 'KEY-11', 'fields' => []]);
-        $client = $this->mockClientExpecting('POST', 'issue', ['json' => ['fields' => ['summary' => 'New']]], $response);
-        $api = new Issues($client);
+        $api = new Issues($this->makeConfig($response));
 
         $result = $api->create(['fields' => ['summary' => 'New']]);
 
@@ -66,11 +64,7 @@ class IssuesTest extends TestCase
             ['id' => '1', 'filename' => 'test.txt', 'mimeType' => 'text/plain', 'size' => 10, 'content' => '', 'self' => ''],
         ]);
         $multipart = [['name' => 'file', 'contents' => 'data', 'filename' => 'test.txt']];
-        $client = $this->mockClientExpecting('POST', 'issue/KEY-1/attachments', [
-            'multipart' => $multipart,
-            'headers' => ['Accept' => 'application/json', 'X-Atlassian-Token' => 'no-check'],
-        ], $response);
-        $api = new Issues($client);
+        $api = new Issues($this->makeConfig($response));
 
         $result = $api->attach('KEY-1', $multipart);
 
@@ -87,8 +81,7 @@ class IssuesTest extends TestCase
             'updated' => '2024-01-01T00:00:00.000+0000',
             'self' => 'https://example.com/comment/200',
         ]);
-        $client = $this->mockClientExpecting('POST', 'issue/KEY-1/comment', ['json' => ['body' => []]], $response);
-        $api = new Issues($client);
+        $api = new Issues($this->makeConfig($response));
 
         $result = $api->comment('KEY-1', ['body' => []]);
 
@@ -99,8 +92,7 @@ class IssuesTest extends TestCase
     public function test_update(): void
     {
         $response = $this->noContentResponse();
-        $client = $this->mockClientExpecting('PUT', 'issue/KEY-10', ['json' => ['fields' => ['summary' => 'Updated']]], $response);
-        $api = new Issues($client);
+        $api = new Issues($this->makeConfig($response));
 
         $result = $api->update('KEY-10', ['fields' => ['summary' => 'Updated']]);
 
@@ -112,8 +104,7 @@ class IssuesTest extends TestCase
     public function test_get_create_meta_issue_types(): void
     {
         $response = $this->jsonResponse(['issueTypes' => [['id' => '10001', 'name' => 'Bug', 'description' => '', 'subtask' => false, 'iconUrl' => '', 'self' => '']]]);
-        $client = $this->mockClientExpecting('GET', 'issue/createmeta/TEST/issuetypes', ['query' => []], $response);
-        $api = new Issues($client);
+        $api = new Issues($this->makeConfig($response));
 
         $result = $api->getCreateMetaIssueTypes('TEST');
 
@@ -125,8 +116,7 @@ class IssuesTest extends TestCase
     public function test_get_create_meta_fields(): void
     {
         $response = $this->jsonResponse(['fields' => [['fieldId' => 'summary', 'name' => 'Summary', 'required' => true, 'schema' => [], 'operations' => ['set'], 'allowedValues' => []]]]);
-        $client = $this->mockClientExpecting('GET', 'issue/createmeta/TEST/issuetypes/10001', ['query' => []], $response);
-        $api = new Issues($client);
+        $api = new Issues($this->makeConfig($response));
 
         $result = $api->getCreateMetaFields('TEST', '10001');
 
@@ -139,8 +129,7 @@ class IssuesTest extends TestCase
     {
         $meta = ['projects' => [['key' => 'TEST', 'issuetypes' => []]]];
         $response = $this->jsonResponse($meta);
-        $client = $this->mockClientExpecting('GET', 'issue/createmeta', ['query' => []], $response);
-        $api = new Issues($client);
+        $api = new Issues($this->makeConfig($response));
 
         $result = $api->getCreateMeta();
 
@@ -150,8 +139,7 @@ class IssuesTest extends TestCase
     public function test_delete(): void
     {
         $response = $this->noContentResponse();
-        $client = $this->mockClientExpecting('DELETE', 'issue/KEY-1', ['query' => []], $response);
-        $api = new Issues($client);
+        $api = new Issues($this->makeConfig($response));
 
         $result = $api->delete('KEY-1');
 
@@ -168,8 +156,7 @@ class IssuesTest extends TestCase
                 ['id' => '2', 'name' => 'In Progress', 'hasScreen' => false, 'isGlobal' => true, 'isInitial' => false, 'isConditional' => false],
             ],
         ]);
-        $client = $this->mockClientExpecting('GET', 'issue/KEY-1/transitions', ['query' => []], $response);
-        $api = new Issues($client);
+        $api = new Issues($this->makeConfig($response));
 
         $result = $api->getTransitions('KEY-1');
 
@@ -181,8 +168,7 @@ class IssuesTest extends TestCase
     public function test_transition(): void
     {
         $response = $this->noContentResponse();
-        $client = $this->mockClientExpecting('POST', 'issue/KEY-1/transitions', ['json' => ['transition' => ['id' => '5']]], $response);
-        $api = new Issues($client);
+        $api = new Issues($this->makeConfig($response));
 
         $result = $api->transition('KEY-1', ['transition' => ['id' => '5']]);
 
@@ -192,8 +178,7 @@ class IssuesTest extends TestCase
     public function test_assign(): void
     {
         $response = $this->noContentResponse();
-        $client = $this->mockClientExpecting('PUT', 'issue/KEY-1/assignee', ['json' => ['accountId' => 'u1']], $response);
-        $api = new Issues($client);
+        $api = new Issues($this->makeConfig($response));
 
         $result = $api->assign('KEY-1', 'u1');
 
@@ -210,8 +195,7 @@ class IssuesTest extends TestCase
             'watchCount' => 1,
             'watchers' => [['accountId' => 'u1', 'displayName' => 'Alice', 'emailAddress' => '', 'active' => true]],
         ]);
-        $client = $this->mockClientExpecting('GET', 'issue/KEY-1/watchers', ['query' => []], $response);
-        $api = new Issues($client);
+        $api = new Issues($this->makeConfig($response));
 
         $result = $api->getWatchers('KEY-1');
 
@@ -223,11 +207,7 @@ class IssuesTest extends TestCase
     public function test_add_watcher(): void
     {
         $response = $this->noContentResponse();
-        $client = $this->mockClientExpecting('POST', 'issue/KEY-1/watchers', [
-            'body' => '"u1"',
-            'headers' => ['Content-Type' => 'application/json'],
-        ], $response);
-        $api = new Issues($client);
+        $api = new Issues($this->makeConfig($response));
 
         $result = $api->addWatcher('KEY-1', 'u1');
 
@@ -237,8 +217,7 @@ class IssuesTest extends TestCase
     public function test_remove_watcher(): void
     {
         $response = $this->noContentResponse();
-        $client = $this->mockClientExpecting('DELETE', 'issue/KEY-1/watchers', ['query' => ['accountId' => 'u1']], $response);
-        $api = new Issues($client);
+        $api = new Issues($this->makeConfig($response));
 
         $result = $api->removeWatcher('KEY-1', 'u1');
 
@@ -251,8 +230,7 @@ class IssuesTest extends TestCase
     {
         $page1 = $this->jsonResponse(['issues' => [], 'total' => 2, 'maxResults' => 1, 'startAt' => 0]);
         $page2 = $this->jsonResponse(['issues' => [], 'total' => 2, 'maxResults' => 1, 'startAt' => 1]);
-        $client = $this->mockClientWithResponses([$page1, $page2]);
-        $api = new Issues($client);
+        $api = new Issues($this->makeConfigWithResponses([$page1, $page2]));
 
         $pages = iterator_to_array($api->paginate());
 
@@ -264,8 +242,7 @@ class IssuesTest extends TestCase
     public function test_paginate_create_meta_issue_types(): void
     {
         $response = $this->jsonResponse(['issueTypes' => [], 'total' => 0, 'maxResults' => 50, 'startAt' => 0]);
-        $client = $this->mockClientWithResponses([$response]);
-        $api = new Issues($client);
+        $api = new Issues($this->makeConfig($response));
 
         $pages = iterator_to_array($api->paginateCreateMetaIssueTypes('TEST'));
 
@@ -276,12 +253,138 @@ class IssuesTest extends TestCase
     public function test_paginate_create_meta_fields(): void
     {
         $response = $this->jsonResponse(['fields' => [], 'total' => 0, 'maxResults' => 50, 'startAt' => 0]);
-        $client = $this->mockClientWithResponses([$response]);
-        $api = new Issues($client);
+        $api = new Issues($this->makeConfig($response));
 
         $pages = iterator_to_array($api->paginateCreateMetaFields('TEST', '10001'));
 
         $this->assertCount(1, $pages, 'paginateCreateMetaFields() should yield one page');
         $this->assertInstanceOf(FieldMetas::class, $pages[0], 'Each yielded value should be a FieldMetas instance');
+    }
+
+    // ── Validation ────────────────────────────────────────────────────────
+
+    private function makeApi(): Issues
+    {
+        return new Issues($this->makeConfig($this->jsonResponse([])));
+    }
+
+    public function test_show_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->show('');
+    }
+
+    public function test_attach_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->attach('');
+    }
+
+    public function test_comment_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->comment('');
+    }
+
+    public function test_update_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->update('');
+    }
+
+    public function test_delete_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->delete('');
+    }
+
+    public function test_get_transitions_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->getTransitions('');
+    }
+
+    public function test_transition_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->transition('');
+    }
+
+    public function test_assign_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->assign('', 'u1');
+    }
+
+    public function test_assign_throws_on_empty_account_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->assign('KEY-1', '');
+    }
+
+    public function test_get_watchers_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->getWatchers('');
+    }
+
+    public function test_add_watcher_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->addWatcher('', 'u1');
+    }
+
+    public function test_add_watcher_throws_on_empty_account_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->addWatcher('KEY-1', '');
+    }
+
+    public function test_remove_watcher_throws_on_empty_issue_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->removeWatcher('', 'u1');
+    }
+
+    public function test_remove_watcher_throws_on_empty_account_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->removeWatcher('KEY-1', '');
+    }
+
+    public function test_get_create_meta_issue_types_throws_on_empty_project_key(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->getCreateMetaIssueTypes('');
+    }
+
+    public function test_get_create_meta_fields_throws_on_empty_project_key(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->getCreateMetaFields('', '10001');
+    }
+
+    public function test_get_create_meta_fields_throws_on_empty_issue_type_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->makeApi()->getCreateMetaFields('TEST', '');
+    }
+
+    public function test_paginate_create_meta_issue_types_throws_on_empty_project_key(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        iterator_to_array($this->makeApi()->paginateCreateMetaIssueTypes(''));
+    }
+
+    public function test_paginate_create_meta_fields_throws_on_empty_project_key(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        iterator_to_array($this->makeApi()->paginateCreateMetaFields('', '10001'));
+    }
+
+    public function test_paginate_create_meta_fields_throws_on_empty_issue_type_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        iterator_to_array($this->makeApi()->paginateCreateMetaFields('TEST', ''));
     }
 }

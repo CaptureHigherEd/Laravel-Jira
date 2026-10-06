@@ -3,6 +3,7 @@
 namespace CaptureHigherEd\LaravelJira\Tests\Api;
 
 use CaptureHigherEd\LaravelJira\Api\Fields;
+use CaptureHigherEd\LaravelJira\Exception\InvalidArgumentException;
 use CaptureHigherEd\LaravelJira\Models\Field;
 use CaptureHigherEd\LaravelJira\Models\Fields as ModelsFields;
 use CaptureHigherEd\LaravelJira\Tests\Concerns\MocksHttpResponses;
@@ -52,9 +53,8 @@ class FieldsTest extends TestCase
     private function makeFieldsApiWithCreateMeta(): Fields
     {
         $response = $this->jsonResponse($this->createMetaData());
-        $client = $this->mockClientExpecting('GET', 'issue/createmeta', ['query' => ['expand' => 'projects.issuetypes.fields']], $response);
 
-        return new Fields($client);
+        return new Fields($this->makeConfig($response));
     }
 
     // ── index ─────────────────────────────────────────────────────────────
@@ -65,8 +65,7 @@ class FieldsTest extends TestCase
             ['id' => 'summary', 'key' => 'summary', 'name' => 'Summary', 'custom' => false, 'orderable' => true, 'navigable' => true, 'searchable' => true, 'clauseNames' => [], 'schema' => []],
         ];
         $response = $this->jsonResponse($fieldData);
-        $client = $this->mockClientExpecting('GET', 'field', ['query' => []], $response);
-        $api = new Fields($client);
+        $api = new Fields($this->makeConfig($response));
 
         $result = $api->index();
 
@@ -80,8 +79,7 @@ class FieldsTest extends TestCase
     {
         $labelsData = ['values' => ['backend', 'bug', 'frontend'], 'total' => 3];
         $response = $this->jsonResponse($labelsData);
-        $client = $this->mockClientExpecting('GET', 'label', ['query' => []], $response);
-        $api = new Fields($client);
+        $api = new Fields($this->makeConfig($response));
 
         $result = $api->getLabels();
 
@@ -134,5 +132,25 @@ class FieldsTest extends TestCase
                 'getFieldOptions() should return an empty array when the field ID does not exist in the issue type fields',
             ],
         ];
+    }
+
+    // ── Validation ────────────────────────────────────────────────────────
+
+    public function test_get_field_options_throws_on_empty_project_key(): void
+    {
+        $api = new Fields($this->makeConfig($this->jsonResponse([])));
+        $field = $this->makeCustomField('customfield_10001');
+
+        $this->expectException(InvalidArgumentException::class);
+        $api->getFieldOptions($field, '', 'Bug');
+    }
+
+    public function test_get_field_options_throws_on_empty_issue_type_name(): void
+    {
+        $api = new Fields($this->makeConfig($this->jsonResponse([])));
+        $field = $this->makeCustomField('customfield_10001');
+
+        $this->expectException(InvalidArgumentException::class);
+        $api->getFieldOptions($field, 'CBE4', '');
     }
 }

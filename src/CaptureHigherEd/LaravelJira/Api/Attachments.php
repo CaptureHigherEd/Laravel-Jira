@@ -2,6 +2,7 @@
 
 namespace CaptureHigherEd\LaravelJira\Api;
 
+use CaptureHigherEd\LaravelJira\Assert;
 use CaptureHigherEd\LaravelJira\Models\Attachment;
 
 /**
@@ -16,6 +17,7 @@ class Attachments extends HttpApi
      */
     public function show(string $attachmentId): Attachment
     {
+        Assert::stringNotEmpty($attachmentId, 'Attachment ID must not be empty.');
         $response = $this->httpGet(sprintf('attachment/%s', $attachmentId));
 
         return $this->hydrateResponse($response, Attachment::class);
@@ -30,6 +32,7 @@ class Attachments extends HttpApi
      */
     public function delete(string $attachmentId): array
     {
+        Assert::stringNotEmpty($attachmentId, 'Attachment ID must not be empty.');
         $response = $this->httpDelete(sprintf('attachment/%s', $attachmentId));
 
         return $this->hydrateResponse($response);
