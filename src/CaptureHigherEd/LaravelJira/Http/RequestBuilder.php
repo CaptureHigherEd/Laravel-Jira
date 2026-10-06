@@ -7,6 +7,7 @@ use Http\Message\MultipartStream\MultipartStreamBuilder;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Message\StreamInterface;
 
 class RequestBuilder
 {
@@ -69,7 +70,7 @@ class RequestBuilder
         foreach ($parts as $part) {
             /** @var string $name */
             $name = $part['name'];
-            /** @var string|\Psr\Http\Message\StreamInterface $contents */
+            /** @var string|StreamInterface $contents */
             $contents = $part['contents'];
             $options = isset($part['filename']) ? ['filename' => $part['filename']] : [];
             $builder->addResource($name, $contents, $options);
