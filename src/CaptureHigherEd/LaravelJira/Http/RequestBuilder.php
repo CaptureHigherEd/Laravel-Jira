@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CaptureHigherEd\LaravelJira\Http;
 
 use Http\Discovery\Psr17FactoryDiscovery;
@@ -9,7 +11,7 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
 
-class RequestBuilder
+final class RequestBuilder
 {
     private RequestFactoryInterface $requestFactory;
 

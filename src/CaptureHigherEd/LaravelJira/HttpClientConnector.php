@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CaptureHigherEd\LaravelJira;
 
 use CaptureHigherEd\LaravelJira\Http\HttpClientConfig;
@@ -7,7 +9,7 @@ use CaptureHigherEd\LaravelJira\Http\RequestBuilder;
 use Http\Discovery\Psr17FactoryDiscovery;
 use Http\Discovery\Psr18ClientDiscovery;
 
-class HttpClientConnector
+final class HttpClientConnector
 {
     protected ?string $endpoint;
 

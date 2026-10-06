@@ -52,4 +52,58 @@ class HttpServerExceptionTest extends TestCase
 
         $this->assertSame(['message' => 'Service Unavailable'], $e->getResponseBody(), 'Constructor should wrap plain-text response body in a message array');
     }
+
+    // ── networkError factory ──────────────────────────────────────────────
+
+    public function test_network_error_sets_code_zero(): void
+    {
+        $cause = new \RuntimeException('Connection refused');
+        $e = HttpServerException::networkError($cause);
+
+        $this->assertSame(0, $e->getCode(), 'networkError() should set exception code to 0');
+        $this->assertSame(0, $e->getResponseCode(), 'networkError() should report response code 0');
+    }
+
+    public function test_network_error_has_null_response(): void
+    {
+        $cause = new \RuntimeException('Timeout');
+        $e = HttpServerException::networkError($cause);
+
+        $this->assertNull($e->getResponse(), 'networkError() should return null from getResponse()');
+    }
+
+    public function test_network_error_wraps_previous_exception(): void
+    {
+        $cause = new \RuntimeException('DNS failure');
+        $e = HttpServerException::networkError($cause);
+
+        $this->assertSame($cause, $e->getPrevious(), 'networkError() should chain the original exception as previous');
+    }
+
+    public function test_network_error_returns_empty_response_body(): void
+    {
+        $e = HttpServerException::networkError(new \RuntimeException('err'));
+
+        $this->assertSame([], $e->getResponseBody(), 'networkError() should return empty array from getResponseBody()');
+    }
+
+    // ── unknownHttpResponseCode factory ───────────────────────────────────
+
+    public function test_unknown_http_response_code_sets_status(): void
+    {
+        $response = $this->mockResponse(302, '');
+        $e = HttpServerException::unknownHttpResponseCode($response);
+
+        $this->assertSame(302, $e->getCode(), 'unknownHttpResponseCode() should preserve the HTTP status code');
+        $this->assertSame(302, $e->getResponseCode(), 'unknownHttpResponseCode() should report the correct response code');
+        $this->assertStringContainsString('302', $e->getMessage(), 'unknownHttpResponseCode() should include the status code in the message');
+    }
+
+    public function test_unknown_http_response_code_stores_response(): void
+    {
+        $response = $this->mockResponse(504, '');
+        $e = HttpServerException::unknownHttpResponseCode($response);
+
+        $this->assertSame($response, $e->getResponse(), 'unknownHttpResponseCode() should store the original response');
+    }
 }
