@@ -425,9 +425,19 @@ class HttpApiTest extends TestCase
         $api->callHandleErrors($response);
     }
 
-    public function test_handle_errors_non_4xx_non_matched_throws_server_exception(): void
+    public function test_handle_errors_redirect_throws_client_exception(): void
     {
         $response = $this->mockResponse(302, '');
+        $api = $this->makeApiWithResponse($response);
+
+        $this->expectException(HttpClientException::class);
+
+        $api->callHandleErrors($response);
+    }
+
+    public function test_handle_errors_unknown_5xx_throws_server_exception(): void
+    {
+        $response = $this->mockResponse(504, '');
         $api = $this->makeApiWithResponse($response);
 
         $this->expectException(HttpServerException::class);

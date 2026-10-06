@@ -133,10 +133,11 @@ abstract class HttpApi
             case 503:
                 throw HttpServerException::serverError($response);
             default:
-                if ($statusCode >= 400 && $statusCode < 500) {
-                    throw HttpClientException::unknown($response);
+                // Redirects are not followed by the PSR-18 client, so a 3xx lands here; it is not a server fault.
+                if ($statusCode >= 500) {
+                    throw HttpServerException::unknownHttpResponseCode($response);
                 }
-                throw HttpServerException::unknownHttpResponseCode($response);
+                throw HttpClientException::unknown($response);
         }
     }
 
