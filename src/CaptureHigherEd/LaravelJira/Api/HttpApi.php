@@ -16,6 +16,10 @@ abstract class HttpApi
 
     public function __construct(protected HttpClientConfig $config) {}
 
+    /**
+     * The last response this instance received. `Jira` accessors return a new instance per call,
+     * so keep the instance: `$issues = $jira->issues(); $issues->show('X'); $issues->getLastResponse();`
+     */
     public function getLastResponse(): ?ResponseInterface
     {
         return $this->lastResponse;
