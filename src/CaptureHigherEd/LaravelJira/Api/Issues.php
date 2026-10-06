@@ -244,7 +244,7 @@ class Issues extends HttpApi
 
         $response = $this->httpPostRaw(
             sprintf('issue/%s/watchers', $issueId),
-            (string) json_encode($accountId),
+            json_encode($accountId, JSON_THROW_ON_ERROR),
             'application/json'
         );
 

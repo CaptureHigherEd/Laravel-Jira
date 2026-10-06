@@ -72,6 +72,13 @@ class RequestBuilderTest extends TestCase
         $this->assertSame('[]', (string) $request->getBody());
     }
 
+    public function test_create_with_json_throws_on_invalid_utf8(): void
+    {
+        $this->expectException(\JsonException::class);
+
+        $this->builder->createWithJson('PUT', 'https://example.com/issue/KEY-1', ['summary' => "\xC3"]);
+    }
+
     // ── createWithRawBody ─────────────────────────────────────────────────
 
     public function test_create_with_raw_body_sets_body(): void

@@ -38,7 +38,7 @@ class RequestBuilder
      */
     public function createWithJson(string $method, string $uri, array $body): RequestInterface
     {
-        $stream = $this->streamFactory->createStream(json_encode($body) ?: '{}');
+        $stream = $this->streamFactory->createStream(json_encode($body, JSON_THROW_ON_ERROR));
 
         return $this->requestFactory->createRequest($method, $uri)
             ->withHeader('Content-Type', 'application/json')
