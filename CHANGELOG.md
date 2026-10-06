@@ -4,12 +4,19 @@
 
 ## [v2.0.0](https://github.com/CaptureHigherEd/Laravel-Jira/compare/v1.0.5...v2.0.0) - Unreleased
 
+* [2.x] **Breaking:** `Issues::attach()` returns `Attachments` instead of `Issue` by [@mpetty](https://github.com/mpetty)
+* [2.x] **Breaking:** `Issues::comment()` returns `Comment` instead of `Issue`, and now delegates to `Comments::create()` by [@mpetty](https://github.com/mpetty)
+* [2.x] **Breaking:** `Field::getOptions()` removed — use `Api\Fields::getFieldOptions()` by [@mpetty](https://github.com/mpetty)
+* [2.x] **Breaking:** PHP minimum raised from `^8.0.2` to `^8.1` by [@mpetty](https://github.com/mpetty)
+* [2.x] **Breaking:** Laravel minimum raised from `^8.0||^9.0` to `^10.0||^11.0||^12.0` by [@mpetty](https://github.com/mpetty)
+* [2.x] **Breaking:** All model `const` declarations removed — use string literals (e.g. for `User::NAME`, `Issue::FIELDS`) by [@mpetty](https://github.com/mpetty)
+* [2.x] **Breaking:** All models now extend the `Model` base class instead of implementing `ApiResponse` directly by [@mpetty](https://github.com/mpetty)
 * [2.x] Add `Api\HttpClient` escape hatch for arbitrary API calls; expose via `Jira::httpClient()` by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/17
 * [2.x] Add `HttpServerException::networkError()` factory to wrap PSR-18 `NetworkExceptionInterface` transport failures by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/17
-* [2.x] Add `HttpServerException::unknownHttpResponseCode()` factory for unrecognized non-4xx responses by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/17
+* [2.x] Add `HttpServerException::unknownHttpResponseCode()` factory for unrecognized 5xx responses by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/17
 * [2.x] Extract `Exception\Concerns\ParsesResponseBody` trait to eliminate duplicated body-parsing logic across exception classes by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/17
 * [2.x] Catch `NetworkExceptionInterface` in all `sendRequest()` calls and rethrow as `HttpServerException::networkError()` by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/17
-* [2.x] Fix `handleErrors()` default branch to route unknown 4xx codes to `HttpClientException` and all other unrecognized codes to `HttpServerException` by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/17
+* [2.x] Fix `handleErrors()` default branch to route unknown 5xx codes to `HttpServerException` and all other unrecognized codes (including 3xx) to `HttpClientException` by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/17
 * [2.x] Mark `HttpClientConnector` and `Http\RequestBuilder` as `final` by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/17
 * [2.x] Add `declare(strict_types=1)` to all source files by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/17
 * [2.x] Replace `strpos(...) !== 0` with `str_starts_with()` throughout exception classes by [@mpetty](https://github.com/mpetty) in https://github.com/CaptureHigherEd/Laravel-Jira/pull/17
